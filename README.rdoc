@@ -1,0 +1,93 @@
+= ShellTest
+
+Test modules for shell scripts.
+
+== Description
+
+Provides test modules to simplify testing of shell scripts and other things
+that require interaction with files. ShellTest is not a testing framework.
+ShellTest integrates with Test::Unit and MiniTest out of the box, but it
+should be possible to include the test modules into other test frameworks.
+
+* Github[http://github.com/thinkerbot/shell_test] 
+
+== Usage
+
+  require 'shell_test/unit'
+  class ShellTestTest < Test::Unit::TestCase
+    include ShellTest
+  
+    def test_direct_output
+      with_env('THING' => 'moon') do
+        assert_script %{
+          % echo goodnight $THING
+          goodnight moon
+        }, :status => 0
+      end
+    end
+    
+    def test_match_to_output
+      assert_match %{
+        % cal
+             :.\w+.: :.\d+.:
+        Su Mo Tu We Th Fr Sa
+        :...:
+      }
+    end
+  end
+
+ShellTest builds on several modules that provide specific functionality and
+may be used separately. More complete examples can be found in the
+documentation; these are intended to show the point of each.
+
+==== {FileMethods}[link:classes/ShellTest/FileMethods.html]
+
+Sets up a temporary, test-specific directory for working with files. Better in
+most cases than using Tempfile because you can flag the directory to be saved
+on a failure (using ENV['KEEP_OUTPUTS']='true').
+
+  require 'shell_test/unit'
+  class FileMethodsTest < Test::Unit::TestCase
+    include ShellTest::FileMethods
+
+    def test_make_a_temporary_file
+      path = prepare('dir/file.txt') {|io| io << 'content' }
+      assert_equal "content", File.read(path)
+    end
+  end
+
+==== {SubsetMethods}[link:classes/ShellTest/SubsetMethods.html] 
+
+Allows in-file subsetting of tests into groups. Easy to get carried away with
+this one, but handy, especially for platform-specific tests. Turn on a subset
+or all tests using an ENV variable (ex ENV['ALL']='true').
+
+  require 'shell_test/unit'
+  class SubsetMethodsTest < Test::Unit::TestCase
+    include ShellTest::SubsetMethods
+    
+    condition(:windows) { match_platform?('mswin') }
+    
+    def test_something_for_windows_only
+      condition_test(:windows) do
+        # ...
+      end
+    end
+    
+    def test_something_that_takes_forever
+      extended_test do
+        # ...
+      end
+    end
+  end
+
+== Installation
+
+ShellTest is available as a gem [http://rubygems.org/gems/shell_test].
+
+  % gem install shell_test
+  
+== Info
+
+Developer:: {Simon Chiang}[http://thinkerbot.posterous.com]
+License:: {MIT-Style}[link:files/MIT-LICENSE.html]
