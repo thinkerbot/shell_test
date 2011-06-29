@@ -1,10 +1,15 @@
 require 'test/unit'
+require 'shell_test'
 
 if Object.const_defined?(:MiniTest)
+
   ################################
   # MiniTest shims (ruby 1.9)
   ################################
-  
+
+  # Tap-Test adds a class skip_test method to TestCase to allow a full class
+  # to be skipped (for instance due to a failed Tap::Test::SubsetTest
+  # condition).  The method is not required by any Tap-Test module.
   class Test::Unit::TestCase
     class << self
       # Causes a test suite to be skipped.  If a message is given, it will
@@ -15,16 +20,19 @@ if Object.const_defined?(:MiniTest)
       end
     end
   end
-  
-  # MiniTest renames method_name as name.  For backwards compatibility it must
-  # be added back.
+
+  # MiniTest renames method_name as name.  For backwards compatibility
+  # (and for Tap::Test::FileTest) it must be added back.
   class MiniTest::Unit::TestCase
     def method_name
-      __name__
+      name
     end
   end
-  
+
+  MiniTest::Unit::TestCase.extend ShellTest
+
 else
+
   ################################
   # Test::Unit shims (< ruby 1.9)
   ################################
@@ -34,21 +42,21 @@ else
   class Test::Unit::TestCase
     class << self
       alias tap_original_test_case_inherited inherited
-    
+
       def inherited(child)
         super
         tap_original_test_case_inherited(child)
         child.instance_variable_set(:@skip_messages, [])
         child.instance_variable_set(:@run_test_suite, true)
       end
-    
+
       # Causes a test suite to be skipped.  If a message is given, it will
       # print and notify the user the test suite has been skipped.
       def skip_test(msg=nil)
         @run_test_suite = false
         @skip_messages << msg
       end
-    
+
       alias :original_suite :suite
 
       # Modifies the default suite method to skip the suit unless
@@ -67,5 +75,7 @@ else
       end
     end
   end
+
+  Test::Unit::TestCase.extend Tap::Test
   # :startdoc:
 end

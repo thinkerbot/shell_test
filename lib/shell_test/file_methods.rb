@@ -1,5 +1,3 @@
-require 'shell_test/shim'
-
 module ShellTest
   module FileMethods
     module ClassMethods

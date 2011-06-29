@@ -1,8 +1,8 @@
-require File.expand_path('../../test_helper', __FILE__)
-require 'shell_test/shell_methods'
+require File.expand_path('../test_helper', __FILE__)
+require 'shell_test'
 
-class ShellMethodsTest < Test::Unit::TestCase
-  include ShellTest::ShellMethods
+class ShellTestTest < Test::Unit::TestCase
+  include ShellTest
   
   TestUnitErrorClass = Object.const_defined?(:MiniTest) ? MiniTest::Assertion : Test::Unit::AssertionFailedError
   
