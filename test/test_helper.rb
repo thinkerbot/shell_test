@@ -4,7 +4,13 @@ Bundler.setup
 
 require 'test/unit'
 
-TestUnitErrorClass = Object.const_defined?(:MiniTest) ? MiniTest::Assertion : Test::Unit::AssertionFailedError
+if Object.const_defined?(:MiniTest) 
+  TestUnitErrorClass = MiniTest::Assertion
+else
+  require 'shell_test/unit/shim'
+  Test::Unit::TestCase.extend ShellTest::Unit::Shim
+  TestUnitErrorClass = Test::Unit::AssertionFailedError
+end
 
 if name = ENV['NAME']
   ARGV << "--name=#{name}"

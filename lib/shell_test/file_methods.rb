@@ -148,6 +148,10 @@ module ShellTest
       @method_dir ||= File.expand_path(method_name.to_s, class_dir)
     end
 
+    def method_name
+      __name__
+    end
+
     def cleanup_methods
       self.class.cleanup_methods
     end

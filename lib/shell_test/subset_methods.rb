@@ -248,7 +248,7 @@ module ShellTest
     def subset_test(type, skip=type[0..0].downcase)
       type = type.upcase
       if run_subset?(type) || ENV["#{type}_TEST"]
-        if match_regexp?("#{type}_TEST", name.to_s)
+        if match_regexp?("#{type}_TEST", __name__.to_s)
           yield
         else
           print skip
@@ -279,7 +279,7 @@ module ShellTest
     def benchmark_test(length=10, &block) 
       subset_test("BENCHMARK") do
         puts
-        puts name
+        puts __name__
         Benchmark.bm(length, &block)
       end
     end
