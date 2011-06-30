@@ -51,7 +51,7 @@ module ShellTest
   module SubsetMethods
     # Class methods associated with SubsetTest.
     module ClassMethods
-      
+
       # Passes conditions to subclass
       def inherited(child) # :nodoc:
         super
@@ -59,22 +59,22 @@ module ShellTest
         conditions.each_pair {|key, value| dup[key] = value.dup }
         child.instance_variable_set(:@conditions, dup)
       end
-    
+
       # Initialize conditions.
       def self.extended(base) # :nodoc:
         base.instance_variable_set(:@conditions, {})
       end
-    
+
       # A hash of [name, [msg, condition_block]] pairs defined by condition.
       attr_reader :conditions
-  
+
       # Defines a condition block and associated message.  
       # Raises an error if no condition block is given.
       def condition(name, msg=nil, &block)
         raise ArgumentError, "no condition block given" unless block_given?
         conditions[name] = [msg, block]
       end
-    
+
       # Returns true if the all blocks for the specified conditions return true.
       #
       #   condition(:is_true) { true }
@@ -86,14 +86,14 @@ module ShellTest
       # block, if given.
       def satisfied?(*names) # :yields: name-of-unsatisfied-condition, msg
         unsatisfied = unsatisfied_conditions(*names)
-      
+
         unsatisfied.each do |name| 
           yield(name, condition[name][0])
         end if block_given?
-        
+
         unsatisfied.empty?
       end
-      
+
       # Returns an array of the unsatified conditions.  Raises 
       # an error if a condition has not been defined.
       #
@@ -108,12 +108,12 @@ module ShellTest
           unless condition = conditions[name]
             raise ArgumentError, "Unknown condition: #{name}"
           end
-        
+
           unsatified << name unless condition.last.call
         end
         unsatified
       end
-    
+
       # Returns true if RUBY_PLATFORM matches one of the specfied
       # platforms.  Use the prefix 'non_' to specify any plaform 
       # except the specified platform (ex: 'non_mswin').  Returns
@@ -133,13 +133,13 @@ module ShellTest
 
         true
       end
-    
+
       # Returns true if type or 'ALL' is specified as 'true' in ENV.
       def run_subset?(type)
         ENV[type] == "true" || ENV['ALL'] == "true" ? true : false
       end
     end
-    
+
     def self.included(base) # :nodoc:
       super
       base.extend SubsetMethods::ClassMethods
