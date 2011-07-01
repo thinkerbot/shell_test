@@ -86,7 +86,7 @@ desc 'Default: Run tests.'
 task :default => :test
 
 desc 'Run the tests'
-task :test do
+task :test => :bundle do
   tests = Dir.glob('test/**/*_test.rb')
   tests.delete_if {|test| test =~ /_test\/test_/ }
 
@@ -108,7 +108,7 @@ task :rcov do
 end
 
 desc 'Run the benchmarks'
-task :benchmark do
+task :benchmark => :bundle do
   benchmarks = Dir.glob('benchmark/**/*_bench.rb')
   sh('ruby', '-w', '-e', 'ARGV.dup.each {|test| load test}', *benchmarks)
 end
