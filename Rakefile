@@ -7,7 +7,10 @@ require 'rubygems/package_task'
 #
 
 def gemspec
-  @gemspec ||= eval(File.read('shell_test.gemspec'), TOPLEVEL_BINDING)
+  @gemspec ||= begin
+    path = File.expand_path('../shell_test.gemspec', __FILE__)
+    eval(File.read(path), TOPLEVEL_BINDING, path)
+  end
 end
 
 Gem::PackageTask.new(gemspec) do |pkg|
