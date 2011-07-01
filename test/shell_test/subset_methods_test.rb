@@ -30,43 +30,39 @@ end
 # inheritance test
 #
 
-class SubsetBaseTest < Test::Unit::TestCase
+class SubsetMethodsBaseTest < Test::Unit::TestCase
   include ShellTest::SubsetMethods
+  condition(:condition) { true }
 
-  if !conditions.empty?
-    raise "conditions were NOT empty in subset class"
-  end
-
-  condition(:satisfied) do 
-    true
-  end
-
-  def test_class_level_condition
-    assert satisfied?(:satisfied)
+  def test_condition
+    assert satisfied?(:condition)
   end
 end
 
-class SubsetInheritanceTest < SubsetBaseTest
-  if conditions.empty?
-    raise "conditions WERE empty in subclass"
-  end
-
-  def test_class_level_condition
-    assert satisfied?(:satisfied)
+class SubsetMethodsInheritanceTest < SubsetMethodsBaseTest
+  def test_condition
+    assert satisfied?(:condition)
   end
 end
 
-class SubsetOverrideTest < SubsetBaseTest
-  if conditions.empty?
-    raise "conditions WERE empty in subclass"
-  end
+class SubsetMethodsOverrideTest < SubsetMethodsBaseTest
+  condition(:condition) { false }
 
-  condition(:satisfied) do 
-    false
+  def test_condition
+    assert !satisfied?(:condition)
   end
+end
 
-  def test_class_level_condition
-    assert !satisfied?(:satisfied)
+module SubsetConditions
+  include ShellTest::SubsetMethods
+  condition(:is_true) { true }
+end
+
+class SubsetIncludeTest < Test::Unit::TestCase
+  include SubsetConditions
+  
+  def test_condition
+    assert satisfied?(:is_true)
   end
 end
 
@@ -80,5 +76,18 @@ class ShellTestExample < Test::Unit::TestCase
 
   def test_using_conditions
     condition_test(:never_run) { flunk }
+  end
+end
+
+module Conditions
+  include ShellTest::SubsetMethods
+  condition(:is_true) { true }
+end
+
+class IncludeConditionsTest < Test::Unit::TestCase
+  include Conditions
+
+  def test_included_condition
+    condition_test(:is_true) { assert true }
   end
 end
