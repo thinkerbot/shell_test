@@ -35,13 +35,13 @@ class SubsetMethodsBaseTest < Test::Unit::TestCase
   condition(:condition) { true }
 
   def test_condition
-    assert satisfied?(:condition)
+    assert condition_satisfied?(:condition)
   end
 end
 
 class SubsetMethodsInheritanceTest < SubsetMethodsBaseTest
   def test_condition
-    assert satisfied?(:condition)
+    assert condition_satisfied?(:condition)
   end
 end
 
@@ -49,7 +49,7 @@ class SubsetMethodsOverrideTest < SubsetMethodsBaseTest
   condition(:condition) { false }
 
   def test_condition
-    assert !satisfied?(:condition)
+    assert !condition_satisfied?(:condition)
   end
 end
 
@@ -62,7 +62,7 @@ class SubsetIncludeTest < Test::Unit::TestCase
   include SubsetConditions
   
   def test_condition
-    assert satisfied?(:is_true)
+    assert condition_satisfied?(:is_true)
   end
 end
 

@@ -102,12 +102,12 @@ module ShellTest
       #
       #   condition(:is_true) { true }
       #   condition(:is_false) { false }
-      #   satisfied?(:is_true)              # => true
-      #   satisfied?(:is_true, :is_false)   # => false
+      #   condition_satisfied?(:is_true)              # => true
+      #   condition_satisfied?(:is_true, :is_false)   # => false
       #
       # Yields the name and message for each unsatisfied condition to the
       # block, if given.
-      def satisfied?(*condition_names)
+      def condition_satisfied?(*condition_names)
         unsatisfied = unsatisfied_conditions(*condition_names)
 
         unsatisfied.each do |name|
@@ -163,8 +163,8 @@ module ShellTest
     extend ModuleMethods
 
     # Returns true if the specified conditions are satisfied.
-    def satisfied?(*condition_names)
-      self.class.satisfied?(*condition_names)
+    def condition_satisfied?(*condition_names)
+      self.class.condition_satisfied?(*condition_names)
     end
 
     # Conditonal test.  Only runs if the specified conditions are satisfied.
@@ -184,7 +184,7 @@ module ShellTest
     #
     # See SubsetMethodsClass#condition for more details.
     def condition_test(*condition_names)
-      if satisfied?(*condition_names)
+      if condition_satisfied?(*condition_names)
         yield
       else
         print ' '
