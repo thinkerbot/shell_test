@@ -1,8 +1,8 @@
-require File.expand_path('../test_helper', __FILE__)
-require 'shell_test'
+require File.expand_path('../../test_helper', __FILE__)
+require 'shell_test/shell_methods'
 
-class ShellTestTest < Test::Unit::TestCase
-  include ShellTest
+class ShellMethodsTest < Test::Unit::TestCase
+  include ShellTest::ShellMethods
 
   #
   # set_env test
