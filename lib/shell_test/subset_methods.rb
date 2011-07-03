@@ -1,5 +1,3 @@
-require 'benchmark'
-
 module ShellTest
 
   # SubsetMethods provides methods to conditionally run tests - if the
