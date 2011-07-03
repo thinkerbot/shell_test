@@ -1,7 +1,3 @@
-require 'rubygems'
-require 'bundler'
-Bundler.setup
-
 require 'test/unit'
 
 if Object.const_defined?(:MiniTest) 

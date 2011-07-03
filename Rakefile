@@ -62,42 +62,28 @@ Rake::RDocTask.new(:rdoc) do |rdoc|
 end
 
 #
-# Ruby environment tasks
+# Test tasks
 #
 
 def current_ruby
   `ruby -v`.split[0,2].join('-')
 end
 
-desc 'Bundle dependencies'
-task :bundle do
-  puts "Using #{current_ruby}"
-  output = `bundle check 2>&1`
-
-  unless $?.to_i == 0
-    puts output
-    sh "bundle install 2>&1"
-    puts
-  end
-end
-
-#
-# Test tasks
-#
-
 desc 'Default: Run tests.'
 task :default => :test
 
 desc 'Run the tests'
-task :test => :bundle do
+task :test do
+  puts "Using #{current_ruby}"
+
   tests = Dir.glob('test/**/*_test.rb')
   tests.delete_if {|test| test =~ /_test\/test_/ }
 
   if ENV['RCOV'] == 'true'
     FileUtils.rm_rf File.expand_path('../coverage', __FILE__)
-    sh('rcov', '-w', '--text-report', '--exclude', '^/', *tests)
+    sh('rcov', '-w', '-Ilib', '--text-report', '--exclude', '^/', *tests)
   else
-    sh('ruby', '-w', '-e', 'ARGV.dup.each {|test| load test}', *tests)
+    sh('ruby', '-w', '-Ilib', '-e', 'ARGV.dup.each {|test| load test}', *tests)
   end
 end
 
@@ -108,10 +94,4 @@ desc 'Run rcov'
 task :rcov do
   ENV['RCOV'] = 'true'
   Rake::Task["test"].invoke
-end
-
-desc 'Run the benchmarks'
-task :benchmark => :bundle do
-  benchmarks = Dir.glob('benchmark/**/*_bench.rb')
-  sh('ruby', '-w', '-e', 'ARGV.dup.each {|test| load test}', *benchmarks)
 end

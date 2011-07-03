@@ -3,6 +3,7 @@ require 'shell_test'
 
 class ReadmeTest < Test::Unit::TestCase
   include ShellTest
+  LIBDIR = File.expand_path('../../lib', __FILE__)
 
   def test_shell_test_usage
     script = prepare('test.rb') do |io|
@@ -48,7 +49,7 @@ class ReadmeTest < Test::Unit::TestCase
       })
     end
     
-    result = sh "ruby '#{script}'"
+    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
     assert_equal 0, $?.exitstatus, result
   end
   
@@ -67,7 +68,7 @@ class ReadmeTest < Test::Unit::TestCase
       })
     end
 
-    result = sh "ruby '#{script}'"
+    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
     assert_equal 0, $?.exitstatus, result
   end
   
@@ -93,7 +94,7 @@ class ReadmeTest < Test::Unit::TestCase
       })
     end
 
-    result = sh "ruby '#{script}'"
+    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
     assert_equal 0, $?.exitstatus, result
   end
 end
