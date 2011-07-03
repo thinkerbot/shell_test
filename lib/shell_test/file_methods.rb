@@ -36,10 +36,13 @@ module ShellTest
         call_line = caller.find {|value| value !~ /`(includ|inherit|extend)ed'$/ }
 
         if call_line
-          calling_file = call_line.gsub(/:\d+(:in .*)?$/, "")
+          calling_file   = call_line.gsub(/:\d+(:in .*)?$/, "")
           base.class_dir = calling_file.chomp(File.extname(calling_file))
-        elsif base.class_dir.nil?
-          warn "could not guess class_dir for #{base}"
+        else
+          unless Dir.respond_to?(:tmpdir)
+            require 'tmpdir'
+          end
+          base.class_dir = Dir.tmpdir
         end
 
         base.reset_cleanup_methods

@@ -10,4 +10,9 @@ class ShellTestTest < Test::Unit::TestCase
     assert modules.include?(ShellTest::ShellMethods)
     assert modules.include?(ShellTest::FileMethods)
   end
+
+  def test_method_directories_are_setup_correctly
+    expected = File.expand_path('../shell_test_test/test_method_directories_are_setup_correctly', __FILE__)
+    assert_equal expected, method_dir
+  end
 end
