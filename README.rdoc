@@ -43,7 +43,7 @@ should be possible to include the test modules into other test frameworks.
     end
     
     def test_match_to_command_output
-      assert_match %{
+      assert_script_match %{
         % cal   # [0]
         :...:
         Su Mo Tu We Th Fr Sa
@@ -79,20 +79,18 @@ this one, but handy, especially for platform-specific tests. Turn on a subset
 or all tests using an ENV variable (ex ENV['ALL']='true').
 
   require 'shell_test/unit'
+  require 'rbconfig'
+
   class SubsetMethodsTest < Test::Unit::TestCase
     include ShellTest::SubsetMethods
-    
-    condition(:windows) { match_platform?('mswin') }
-    
+
+    condition(:windows) do
+      RbConfig::CONFIG['host_os'] =~ /mswin|windows|cygwin/i
+    end
+
     def test_something_for_windows_only
       condition_test(:windows) do
-        # ...
-      end
-    end
-    
-    def test_something_that_takes_forever
-      extended_test do
-        # ...
+        assert_match(/^[A-z]:/, __FILE__)
       end
     end
   end
@@ -102,7 +100,7 @@ or all tests using an ENV variable (ex ENV['ALL']='true').
 ShellTest is available as a gem [http://rubygems.org/gems/shell_test].
 
   % gem install shell_test
-  
+
 == Info
 
 Developer:: {Simon Chiang}[http://thinkerbot.posterous.com]
