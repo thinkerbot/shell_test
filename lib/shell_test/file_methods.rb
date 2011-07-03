@@ -33,8 +33,14 @@ module ShellTest
       def self.initialize(base)
         # Infers the test directory from the calling file.
         #   'some_class_test.rb' => 'some_class_test'
-        calling_file = caller[1].gsub(/:\d+(:in .*)?$/, "")
-        base.class_dir = calling_file.chomp(File.extname(calling_file))
+        call_line = caller.find {|value| value !~ /`(includ|inherit|extend)ed'$/ }
+
+        if call_line
+          calling_file = call_line.gsub(/:\d+(:in .*)?$/, "")
+          base.class_dir = calling_file.chomp(File.extname(calling_file))
+        elsif base.class_dir.nil?
+          warn "could not guess class_dir for #{base}"
+        end
 
         base.reset_cleanup_methods
         unless base.instance_variable_defined?(:@cleanup_method_registry)
