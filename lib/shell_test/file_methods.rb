@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module ShellTest
   module FileMethods
     module ClassMethods
