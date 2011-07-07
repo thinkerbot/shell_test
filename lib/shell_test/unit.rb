@@ -3,11 +3,12 @@ require 'shell_test'
 
 module ShellTest
   # ShellTest is designed to work with MiniTest, which is the standard testing
-  # framework included in ruby 1.9.  Minor changes in the API require shims to
-  # be backward compatible.
+  # framework included in ruby 1.9.  Minor changes in the API break backward
+  # compatibility with Test::Unit and/or add functionality expected by
+  # ShellTest.
   #
-  # To apply the shims, require the shim file before defining specific
-  # TestCase subclasses.
+  # Test::Unit can be patched by requiring the shim file before defining
+  # specific TestCase subclasses.
   #
   #   require 'test/unit'
   #   unless Object.const_defined?(:MiniTest)
@@ -18,13 +19,17 @@ module ShellTest
   #
   #  require 'shell_test/unit'
   #
-  # ==== Changes
+  # Note that the shim script has only been tested vs the Test::Unit that
+  # comes with ruby 1.8.x.  A Test::Unit 2.0 gem exists; use with caution.
   #
-  # The shims file hacks into the guts of Test::Unit to do two things:
+  # ==== Patches
   #
-  # 1) A __name__ method is added which returns the test method name
+  # The shim script adds two things to Test::Unit:
   #
-  # 2) A skip method is added to skip a test (use it like flunk)
+  # 1) A __name__ method which returns the test method name (alias for
+  # method_name)
+  #
+  # 2) A skip method which can be used to skip a test (use it like flunk)
   #
   module Unit
   end
