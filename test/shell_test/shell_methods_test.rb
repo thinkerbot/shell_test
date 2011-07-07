@@ -170,16 +170,16 @@ echo
 
   def test_assert_script_for_multiple_commands
     assert_script %{
-      % echo one
+      $ echo one
       one
-      % echo two
+      $ echo two
       two
     }
   end
 
   def test_assert_script_for_multiline_commands
     assert_script %{
-      % for n in one two; do
+      $ for n in one two; do
       >   echo $n
       > done
       one
@@ -209,7 +209,7 @@ echo
 
   def test_assert_script_match_matches_regexps_to_output
     assert_script_match %Q{
-      % echo "goodnight
+      $ echo "goodnight
       > moon"
       goodnight
       m:.o+.:n
@@ -219,7 +219,7 @@ echo
   def test_assert_script_match_fails_on_mismatch
     assert_raises(TestUnitErrorClass) do
       assert_script_match %Q{
-        % echo 'hello world'
+        $ echo 'hello world'
         goodnight m:.o+.:n
       }
     end

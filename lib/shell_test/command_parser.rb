@@ -5,7 +5,7 @@ module ShellTest
 
     def initialize(options={})
       options = {
-        :ps1 => '% ',
+        :ps1 => '$ ',
         :ps2 => '> '
       }.merge(options)
 

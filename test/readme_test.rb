@@ -19,7 +19,7 @@ class ReadmeTest < Test::Unit::TestCase
             end
 
             assert_script %{
-              % sh '#{script}' moon
+              $ sh '#{script}' moon
               goodnight moon
             }
           end
@@ -42,7 +42,7 @@ class ReadmeTest < Test::Unit::TestCase
           def test_a_script_using_variables
             with_env("THING" => "moon") do
               assert_script %{
-                % echo "goodnight $THING"
+                $ echo "goodnight $THING"
                 goodnight moon
               }
             end
@@ -50,16 +50,16 @@ class ReadmeTest < Test::Unit::TestCase
 
           def test_multiple_commands
             assert_script %{
-              % echo one
+              $ echo one
               one
-              % echo two
+              $ echo two
               two
             }
           end
 
           def test_multiline_commands
             assert_script %{
-              % for n in one two; do
+              $ for n in one two; do
               >   echo $n
               > done
               one
@@ -69,20 +69,20 @@ class ReadmeTest < Test::Unit::TestCase
 
           def test_exit_statuses
             assert_script %{
-              % true  # [0]
-              % false # [1]
+              $ true  # [0]
+              $ false # [1]
             }
           end
 
           def test_exit_status_only
             assert_script %{
-              % date  # [0] ...
+              $ date  # [0] ...
             }
           end
 
           def test_output_with_inline_regexps
             assert_script_match %{
-              % cal
+              $ cal
               :...:
               Su Mo Tu We Th Fr Sa
               :...:
