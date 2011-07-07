@@ -74,7 +74,7 @@ class ReadmeTest < Test::Unit::TestCase
             }
           end
 
-          def test_exit_status_only
+          def test_exit_status_and_not_ouptut
             assert_script %{
               $ date  # [0] ...
             }
@@ -96,7 +96,7 @@ class ReadmeTest < Test::Unit::TestCase
     assert_equal 0, $?.exitstatus, result
   end
   
-  def test_file_methods_usage
+  def test_file_methods_example
     script = prepare('test.rb') do |io|
       io << outdent(%q{
         require 'shell_test/unit'

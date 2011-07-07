@@ -4,8 +4,7 @@ Test modules for shell scripts.
 
 == Description
 
-Provides test modules to simplify testing of shell scripts and other things
-that require interaction with files.
+Provides test modules to simplify testing of shell scripts.
 
 ShellTest is not a testing framework. ShellTest integrates with Test::Unit and
 MiniTest out of the box, but it should be possible to include the test modules
@@ -34,6 +33,14 @@ may be used independently, but by including ShellTest you get them all:
   end
 
 ==== {ShellMethods}[link:classes/ShellTest/ShellMethods.html]
+
+Provides the shell testing methods. These methods are designed to input a
+string that looks like terminal input/output. Commands are parsed out of the
+string, run, and then anything printed to stdout is compared to the expected
+output. In addition the exit status is checked for success (0).
+
+Special comments following the first line of a command can turn off
+output/status checking, or specify a different exit status to expect.
 
   require 'shell_test/unit'
   
@@ -75,7 +82,7 @@ may be used independently, but by including ShellTest you get them all:
       }
     end
     
-    def test_exit_status_only
+    def test_exit_status_and_not_ouptut
       assert_script %{
         $ date  # [0] ...
       }
@@ -93,9 +100,14 @@ may be used independently, but by including ShellTest you get them all:
 
 ==== {FileMethods}[link:classes/ShellTest/FileMethods.html]
 
-Sets up a temporary, test-specific directory for working with files. Better in
-most cases than using Tempfile because you can flag the directory to be saved
-on a failure (using ENV['KEEP_OUTPUTS']='true').
+Sets up a temporary, test-specific directory for working with files. This
+approach is better in most cases than using Tempfile because you can flag the
+directory to be saved on a failure (using ENV['KEEP_OUTPUTS']='true').
+
+By default the directory is guessed based off of the test file and test
+method. If this example were located in the 'test/file_methods_example.rb'
+file, then the directory for the test case would be
+'test/file_methods_example/test_preparation_of_a_test_specific_file'.
 
   require 'shell_test/unit'
   
@@ -127,7 +139,6 @@ To test against multiple platforms I suggest using rvm.  In that case:
   rvm rake test
 
 Please report any issues using {GitHub issues}[Github[http://github.com/thinkerbot/shell_test/issues].
-
 
 == Info
 

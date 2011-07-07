@@ -10,10 +10,11 @@ Gem::Specification.new do |s|
   s.homepage    = ''
   s.summary     = %q{Test modules for shell scripts}
   s.description = %w{
-    Provides test modules to simplify testing of shell scripts and other things
-    that require interaction with files. ShellTest is not a testing framework.
-    ShellTest integrates with Test::Unit and MiniTest out of the box, but it
-    should be possible to include the test modules into other test frameworks.
+    Provides test modules to simplify testing of shell scripts.
+    
+    ShellTest is not a testing framework. ShellTest integrates with Test::Unit and
+    MiniTest out of the box, but it should be possible to include the test modules
+    into other test frameworks.
   }.join(' ')
 
   s.rubyforge_project = 'shell_test'
