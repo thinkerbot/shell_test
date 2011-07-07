@@ -5,47 +5,90 @@ class ReadmeTest < Test::Unit::TestCase
   include ShellTest
   LIBDIR = File.expand_path('../../lib', __FILE__)
 
-  def test_shell_test_usage
+  def test_shell_test_example
     script = prepare('test.rb') do |io|
       io << outdent(%q{
-      require 'shell_test/unit'
-      class ShellTestTest < Test::Unit::TestCase
-        include ShellTest
+        require 'shell_test/unit'
 
-        def test_setting_variables_and_checking_stdout
-          with_env("THING" => "moon") do
+        class ShellTestExample < Test::Unit::TestCase
+          include ShellTest
+
+          def test_a_script
+            script = prepare('script.sh') do |io|
+              io.puts "echo goodnight $1"
+            end
+
             assert_script %{
-              % echo goodnight $THING
+              % sh '#{script}' moon
               goodnight moon
             }
           end
         end
+      })
+    end
+    
+    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
+    assert_equal 0, $?.exitstatus, result
+  end
+  
+  def test_shell_methods_example
+    script = prepare('test.rb') do |io|
+      io << outdent(%q{
+        require 'shell_test/unit'
 
-        def test_multiple_commands
-          assert_script %{
-            % echo one
-            one
-            % echo two
-            two
-          }
-        end
+        class ShellMethodsExample < Test::Unit::TestCase
+          include ShellTest::ShellMethods
 
-        def test_exit_statuses
-          assert_script %{
-            % true  # [0]
-            % false # [1]
-          }
-        end
+          def test_a_script_using_variables
+            with_env("THING" => "moon") do
+              assert_script %{
+                % echo "goodnight $THING"
+                goodnight moon
+              }
+            end
+          end
 
-        def test_match_to_command_output
-          assert_script_match %{
-            % cal   # [0]
-            :...:
-            Su Mo Tu We Th Fr Sa
-            :...:
-          }
+          def test_multiple_commands
+            assert_script %{
+              % echo one
+              one
+              % echo two
+              two
+            }
+          end
+
+          def test_multiline_commands
+            assert_script %{
+              % for n in one two; do
+              >   echo $n
+              > done
+              one
+              two
+            }
+          end
+
+          def test_exit_statuses
+            assert_script %{
+              % true  # [0]
+              % false # [1]
+            }
+          end
+
+          def test_exit_status_only
+            assert_script %{
+              % date  # [0] ...
+            }
+          end
+
+          def test_output_with_inline_regexps
+            assert_script_match %{
+              % cal
+              :...:
+              Su Mo Tu We Th Fr Sa
+              :...:
+            }
+          end
         end
-      end
       })
     end
     
@@ -56,15 +99,16 @@ class ReadmeTest < Test::Unit::TestCase
   def test_file_methods_usage
     script = prepare('test.rb') do |io|
       io << outdent(%q{
-      require 'shell_test/unit'
-      class FileMethodsTest < Test::Unit::TestCase
-        include ShellTest::FileMethods
+        require 'shell_test/unit'
 
-        def test_make_a_temporary_file
-          path = prepare('dir/file.txt') {|io| io << 'content' }
-          assert_equal "content", File.read(path)
+        class FileMethodsExample < Test::Unit::TestCase
+          include ShellTest::FileMethods
+
+          def test_preparation_of_a_test_specific_file
+            path = prepare('dir/file.txt') {|io| io << 'content' }
+            assert_equal "content", File.read(path)
+          end
         end
-      end
       })
     end
 

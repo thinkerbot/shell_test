@@ -5,22 +5,45 @@ Test modules for shell scripts.
 == Description
 
 Provides test modules to simplify testing of shell scripts and other things
-that require interaction with files. ShellTest is not a testing framework.
-ShellTest integrates with Test::Unit and MiniTest out of the box, but it
-should be possible to include the test modules into other test frameworks.
+that require interaction with files.
 
-* Github[http://github.com/thinkerbot/shell_test] 
+ShellTest is not a testing framework. ShellTest integrates with Test::Unit and
+MiniTest out of the box, but it should be possible to include the test modules
+into other test frameworks.
 
 == Usage
 
+ShellTest builds on modules that provide specific functionality. The modules
+may be used independently, but by including ShellTest you get them all:
+
   require 'shell_test/unit'
-  class ShellTestTest < Test::Unit::TestCase
+  
+  class ShellTestExample < Test::Unit::TestCase
     include ShellTest
   
-    def test_setting_variables_and_checking_stdout
+    def test_a_script
+      script = prepare('script.sh') do |io|
+        io.puts "echo goodnight $1"
+      end
+  
+      assert_script %{
+        % sh '#{script}' moon
+        goodnight moon
+      }
+    end
+  end
+
+==== {ShellMethods}[link:classes/ShellTest/ShellMethods.html]
+
+  require 'shell_test/unit'
+  
+  class ShellMethodsExample < Test::Unit::TestCase
+    include ShellTest::ShellMethods
+  
+    def test_a_script_using_variables
       with_env("THING" => "moon") do
         assert_script %{
-          % echo goodnight $THING
+          % echo "goodnight $THING"
           goodnight moon
         }
       end
@@ -34,7 +57,17 @@ should be possible to include the test modules into other test frameworks.
         two
       }
     end
-    
+  
+    def test_multiline_commands
+      assert_script %{
+        % for n in one two; do
+        >   echo $n
+        > done
+        one
+        two
+      }
+    end
+ 
     def test_exit_statuses
       assert_script %{
         % true  # [0]
@@ -42,19 +75,21 @@ should be possible to include the test modules into other test frameworks.
       }
     end
     
-    def test_match_to_command_output
+    def test_exit_status_only
+      assert_script %{
+        % date  # [0] ...
+      }
+    end
+    
+    def test_output_with_inline_regexps
       assert_script_match %{
-        % cal   # [0]
+        % cal
         :...:
         Su Mo Tu We Th Fr Sa
         :...:
       }
     end
   end
-
-ShellTest builds on several modules that provide specific functionality and
-may be used separately. More complete examples can be found in the
-documentation; these are intended to show the point of each.
 
 ==== {FileMethods}[link:classes/ShellTest/FileMethods.html]
 
@@ -63,10 +98,11 @@ most cases than using Tempfile because you can flag the directory to be saved
 on a failure (using ENV['KEEP_OUTPUTS']='true').
 
   require 'shell_test/unit'
-  class FileMethodsTest < Test::Unit::TestCase
+  
+  class FileMethodsExample < Test::Unit::TestCase
     include ShellTest::FileMethods
 
-    def test_make_a_temporary_file
+    def test_preparation_of_a_test_specific_file
       path = prepare('dir/file.txt') {|io| io << 'content' }
       assert_equal "content", File.read(path)
     end
@@ -81,7 +117,7 @@ or all tests using an ENV variable (ex ENV['ALL']='true').
   require 'shell_test/unit'
   require 'rbconfig'
 
-  class SubsetMethodsTest < Test::Unit::TestCase
+  class SubsetMethodsExample < Test::Unit::TestCase
     include ShellTest::SubsetMethods
 
     condition(:windows) do
@@ -100,6 +136,21 @@ or all tests using an ENV variable (ex ENV['ALL']='true').
 ShellTest is available as a gem [http://rubygems.org/gems/shell_test].
 
   % gem install shell_test
+
+== Development
+
+To get started, checkout the code from GitHub[http://github.com/thinkerbot/shell_test] and run:
+
+  git clone https://thinkerbot@github.com/thinkerbot/shell_test.git
+  cd shell_test
+  rake test
+
+To test against multiple platforms I suggest using rvm.  In that case:
+
+  rvm rake test
+
+Please report any issues using {GitHub issues}[Github[http://github.com/thinkerbot/shell_test/issues].
+
 
 == Info
 
