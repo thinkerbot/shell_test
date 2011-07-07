@@ -9,7 +9,7 @@ module ShellTest
       options = {
         :ps1 => '% ',
         :ps2 => '> ',
-        :prefix => '0<&- 2>&1 ',
+        :prefix => 'exec 0<&- 2>&1; ',
         :suffix => ''
       }.merge(options)
 
