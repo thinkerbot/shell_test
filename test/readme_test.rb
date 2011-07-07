@@ -115,30 +115,4 @@ class ReadmeTest < Test::Unit::TestCase
     result = sh "ruby -I'#{LIBDIR}' '#{script}'"
     assert_equal 0, $?.exitstatus, result
   end
-  
-  def test_subset_methods_usage
-    script = prepare('test.rb') do |io|
-      io << outdent(%q{
-      require 'shell_test/unit'
-      require 'rbconfig'
-
-      class SubsetMethodsTest < Test::Unit::TestCase
-        include ShellTest::SubsetMethods
-
-        condition(:windows) do
-          RbConfig::CONFIG['host_os'] =~ /mswin|windows|cygwin/i
-        end
-
-        def test_something_for_windows_only
-          condition_test(:windows) do
-            assert_match(/^[A-z]:/, __FILE__)
-          end
-        end
-      end
-      })
-    end
-
-    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
-    assert_equal 0, $?.exitstatus, result
-  end
 end

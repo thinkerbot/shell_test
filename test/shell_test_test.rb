@@ -6,7 +6,6 @@ class ShellTestTest < Test::Unit::TestCase
 
   def test_include_adds_all_test_modules
     modules = self.class.included_modules
-    assert modules.include?(ShellTest::SubsetMethods)
     assert modules.include?(ShellTest::ShellMethods)
     assert modules.include?(ShellTest::FileMethods)
   end
