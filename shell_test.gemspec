@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
 
   s.extra_rdoc_files = %w{
     README.rdoc
+    MIT-LICENSE
   }
 
   s.files         = %w{

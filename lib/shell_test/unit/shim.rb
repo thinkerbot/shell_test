@@ -1,4 +1,4 @@
-# :stodoc:
+# :stopdoc:
 module ShellTest
   module Unit
     

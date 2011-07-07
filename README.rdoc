@@ -122,7 +122,7 @@ file, then the directory for the test case would be
 
 == Installation
 
-ShellTest is available as a gem [http://rubygems.org/gems/shell_test].
+ShellTest is available as a gem[http://rubygems.org/gems/shell_test].
 
   $ gem install shell_test
 
@@ -138,7 +138,7 @@ To test against multiple platforms I suggest using rvm.  In that case:
 
   rvm rake test
 
-Please report any issues using {GitHub issues}[Github[http://github.com/thinkerbot/shell_test/issues].
+Please report any issues {here}[http://github.com/thinkerbot/shell_test/issues].
 
 == Info
 
