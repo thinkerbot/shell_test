@@ -168,6 +168,15 @@ echo
 }
   end
 
+  def test_assert_script_for_multiple_commands
+    assert_script %{
+      % echo one
+      one
+      % echo two
+      two
+    }
+  end
+
   def test_assert_script_for_multiline_commands
     assert_script %{
       % for n in one two; do
