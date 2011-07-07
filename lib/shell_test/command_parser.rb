@@ -2,21 +2,15 @@ module ShellTest
   class CommandParser
     attr_reader :ps1
     attr_reader :ps2
-    attr_reader :prefix
-    attr_reader :suffix
 
     def initialize(options={})
       options = {
         :ps1 => '% ',
-        :ps2 => '> ',
-        :prefix => 'exec 0<&- 2>&1; ',
-        :suffix => ''
+        :ps2 => '> '
       }.merge(options)
 
       @ps1 = options[:ps1]
       @ps2 = options[:ps2]
-      @prefix = options[:prefix]
-      @suffix = options[:suffix]
     end
 
     def parse_cmd(cmd)
@@ -35,7 +29,7 @@ module ShellTest
         case
         when line.index(ps1) == 0
           if command
-            commands << ["#{prefix}#{command}#{suffix}", output, exit_status]
+            commands << [command, output, exit_status]
           end
 
           command, output, exit_status = parse_cmd lchomp(ps1, line)
@@ -57,7 +51,7 @@ module ShellTest
       end
 
       if command
-        commands << ["#{prefix}#{command}#{suffix}", output, exit_status]
+        commands << [command, output, exit_status]
       end
 
       commands
