@@ -3,8 +3,7 @@ require 'test/unit'
 if Object.const_defined?(:MiniTest) 
   TestUnitErrorClass = MiniTest::Assertion
 else
-  require 'shell_test/unit/shim'
-  Test::Unit::TestCase.extend ShellTest::Unit::Shim
+  require 'shell_test/unit'
   TestUnitErrorClass = Test::Unit::AssertionFailedError
 end
 

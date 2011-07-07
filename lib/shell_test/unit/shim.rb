@@ -1,28 +1,43 @@
-# ShellTest is designed to work with MiniTest, which is the standard testing
-# framework included in ruby 1.9.  Minor changes in the API require shims to
-# be backward compatible.
-#
-# To manually apply the shim, extend Test::Unit::TestCase with the shim module
-# before defining specific TestCase subclasses.
-#
-#   require 'test/unit'
-#   unless Object.const_defined?(:MiniTest)
-#     require 'shell_test/unit/shim'
-#     Test::Unit::TestCase.extend ShellTest::Unit::Shim
-#   end
-#
-# To let ShellTest do this for you:
-#
-#  require 'shell_test/unit'
-#
-module ShellTest
-  module Unit
-    module Shim
-      # Alias method_name to __name__ such that FileMethods can redefine
-      # method_name to call __name__.
-      def self.extended(base)
-        base.class_eval "alias __name__ method_name"
-      end
+require 'test/unit/testresult'
+class Test::Unit::TestResult
+  alias shell_test_original_to_s to_s
+
+  # The current skip count
+  def skip_count
+    @skip_count ||= 0
+  end
+
+  # Records a skipped test run.
+  def add_skip
+    @skip_count = skip_count + 1
+    notify_listeners(CHANGED, self)
+  end
+
+  # Adds the skip count to the summary
+  def to_s
+    "#{shell_test_original_to_s}, #{skip_count} skipped"
+  end
+end
+
+require 'test/unit/testcase'
+class Test::Unit::TestCase
+  class SkipException < StandardError; end
+  PASSTHROUGH_EXCEPTIONS << SkipException
+
+  alias __name__ method_name
+  alias shell_test_original_run run
+
+  def skip msg = nil, bt = caller
+    msg ||= "Skipped, no message given"
+    raise SkipException, msg, bt
+  end
+
+  def run(result, &block)
+    begin
+      shell_test_original_run(result, &block)
+    rescue SkipException
+      result.add_skip
+      yield(FINISHED, name)
     end
   end
 end
