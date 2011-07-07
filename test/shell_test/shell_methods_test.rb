@@ -122,15 +122,15 @@ class ShellMethodsTest < Test::Unit::TestCase
 
   def test_assert_script_correctly_matches_no_output
     assert_script %Q{
-ruby -e ""
+printf ''
 }
 
-    assert_script %Q{ruby -e ""}
+    assert_script %Q{printf ''}
   end
 
   def test_assert_script_correctly_matches_whitespace_output
     assert_script %Q{
-ruby -e 'print "\\t\\n  "'
+printf "\\t\\n  "
 \t
   }
     assert_script %Q{
@@ -154,7 +154,7 @@ echo
     }
 
     assert_script %Q{
-    ruby -e 'print "\\t\\n  "'
+    printf "\\t\\n  "
     \t
       }
 
@@ -188,7 +188,7 @@ echo
   end
 
   def test_assert_script_fails_on_mismatch
-    assert_raises(TestUnitErrorClass) { assert_script %Q{ruby -e ""\nflunk} }
+    assert_raises(TestUnitErrorClass) { assert_script %Q{printf ""\nflunk} }
     assert_raises(TestUnitErrorClass) { assert_script %Q{echo pass\nflunk} }
   end
 
@@ -198,7 +198,7 @@ echo
 
   def test__assert_script_does_not_strip_indents
     _assert_script %Q{
-    ruby -e 'print "    \\t\\n      "'
+    printf "    \\t\\n      "
     \t
       }, :outdent => false
   end
