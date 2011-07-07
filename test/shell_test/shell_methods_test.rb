@@ -168,6 +168,16 @@ echo
 }
   end
 
+  def test_assert_script_for_multiline_commands
+    assert_script %{
+      % for n in one two; do
+      >   echo $n
+      > done
+      one
+      two
+    }
+  end
+
   def test_assert_script_fails_on_mismatch
     assert_raises(TestUnitErrorClass) { assert_script %Q{ruby -e ""\nflunk} }
     assert_raises(TestUnitErrorClass) { assert_script %Q{echo pass\nflunk} }
