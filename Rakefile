@@ -32,7 +32,7 @@ task :print_manifest do
   # included already (marking by the absence
   # of a label)
   Dir.glob('**/*').each do |file|
-    next if file =~ /^(rdoc|pkg|coverage)/ || File.directory?(file)
+    next if file =~ /^(rdoc|pkg|coverage|test)/ || File.directory?(file)
     next if File.extname(file) == '.rbc'
 
     path = File.expand_path(file)

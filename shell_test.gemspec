@@ -1,13 +1,13 @@
 # -*- encoding: utf-8 -*-
-$:.push File.expand_path("../lib", __FILE__)
-require "shell_test/version"
+$:.push File.expand_path('../lib', __FILE__)
+require 'shell_test/version'
 
 Gem::Specification.new do |s|
-  s.name        = "shell_test"
+  s.name        = 'shell_test'
   s.version     = ShellTest::VERSION
-  s.authors     = ["Simon Chiang"]
-  s.email       = ["simon.a.chiang@gmail.com"]
-  s.homepage    = ""
+  s.authors     = ['Simon Chiang']
+  s.email       = ['simon.a.chiang@gmail.com']
+  s.homepage    = ''
   s.summary     = %q{Test modules for shell scripts}
   s.description = %w{
     Provides test modules to simplify testing of shell scripts and other things
@@ -16,10 +16,24 @@ Gem::Specification.new do |s|
     should be possible to include the test modules into other test frameworks.
   }.join(' ')
 
-  s.rubyforge_project = "shell_test"
+  s.rubyforge_project = 'shell_test'
 
-  s.files         = %w{}
+  s.extra_rdoc_files = %w{
+    README.rdoc
+  }
+
+  s.files         = %w{
+    lib/shell_test.rb
+    lib/shell_test/command_parser.rb
+    lib/shell_test/file_methods.rb
+    lib/shell_test/regexp_escape.rb
+    lib/shell_test/shell_methods.rb
+    lib/shell_test/subset_methods.rb
+    lib/shell_test/unit.rb
+    lib/shell_test/unit/shim.rb
+    lib/shell_test/version.rb
+  }
   s.test_files    = %w{}
   s.executables   = %w{}
-  s.require_paths = ["lib"]
+  s.require_paths = ['lib']
 end
