@@ -1,0 +1,7 @@
+== 0.1.0 2011/07/07
+
+Initial release.
+
+Much of this code started in the {Tap-Test}[http://rubygems.org/gems/tap-test]
+gem and was later added-to by Linecook[http://rubygems.org/gems/linecook]. It
+has long wished to be it's own gem, and now it is.

@@ -18,8 +18,11 @@ Gem::Specification.new do |s|
   }.join(' ')
 
   s.rubyforge_project = 'shell_test'
-
+  
+  s.has_rdoc = true
+  s.rdoc_options.concat %W{--main README.rdoc -S -N --title ShellTest}
   s.extra_rdoc_files = %w{
+    History.rdoc
     README.rdoc
     MIT-LICENSE
   }
