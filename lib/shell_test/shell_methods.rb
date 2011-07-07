@@ -8,6 +8,11 @@ module ShellTest
       @notify_method_name = true
     end
 
+    # Parse a script into an array of [cmd, output, status] triplets.
+    def parse_script(script, options={})
+      CommandParser.new(options).parse(script)
+    end
+
     # Returns true if the ENV variable 'VERBOSE' is true.  When verbose,
     # ShellTest prints the expanded commands of sh_test to $stdout.
     def verbose?
@@ -78,8 +83,7 @@ module ShellTest
     end
 
     def _assert_script(script, options={})
-      commands = CommandParser.new(options).parse(script)
-      commands.each do |cmd, output, status|
+      parse_script(script, options).each do |cmd, output, status|
         result = sh(cmd)
 
         _assert_output_equal(output, result, cmd) if output
@@ -92,8 +96,7 @@ module ShellTest
     end
 
     def _assert_script_match(script, options={})
-      commands = CommandParser.new(options).parse(script)
-      commands.each do |cmd, output, status|
+      parse_script(script, options).each do |cmd, output, status|
         result = sh(cmd)
 
         _assert_alike(output, result, cmd)       if output
