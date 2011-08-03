@@ -112,6 +112,19 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
+  # glob test
+  #
+
+  def test_glob_globs_the_pattern_under_method_dir
+    a = prepare('a.txt')
+    b = prepare('b')
+    c = prepare('c.txt')
+
+    assert_equal [a, b, c], glob('*')
+    assert_equal [a, c], glob('*.txt')
+  end
+
+  #
   # _prepare test
   #
 

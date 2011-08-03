@@ -215,6 +215,11 @@ module ShellTest
       path
     end
 
+    # Globs the pattern under method_dir.
+    def glob(pattern)
+      Dir.glob path(pattern)
+    end
+
     # Same as prepare but does not outdent content.
     def _prepare(relative_path, content=nil, &block)
       target = path(relative_path)
