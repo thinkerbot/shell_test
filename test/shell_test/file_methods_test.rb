@@ -165,6 +165,24 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
+  # content test
+  #
+  
+  def test_content_returns_content_for_a_file_under_method_dir
+    prepare('dir/file', 'content')
+    assert_equal 'content', content('dir/file')
+  end
+
+  def test_content_allows_specification_of_length_and_offset
+    prepare('dir/file', 'content')
+    assert_equal 'on', content('dir/file', 2, 1)
+  end
+
+  def test_content_returns_nil_for_non_existant_files
+    assert_equal nil, content('dir/file')
+  end
+
+  #
   # remove test
   #
 

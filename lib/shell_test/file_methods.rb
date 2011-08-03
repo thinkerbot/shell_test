@@ -252,6 +252,12 @@ module ShellTest
       _prepare(relative_path, content, &block)
     end
 
+    # Returns the content of the file under method_dir, if it exists.
+    def content(relative_path, length=nil, offset=nil)
+      path = path(relative_path)
+      File.exists?(path) ? File.read(path, length, offset) : nil
+    end
+
     # Removes a file or directory under method_dir, if it exists.
     def remove(relative_path)
       full_path = path(relative_path)
