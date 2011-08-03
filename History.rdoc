@@ -5,6 +5,7 @@
   assert_str_match.
 * Added FileMethods#_prepare and made prepare outdent content [issue #9]
 * Added content, mode, and glob to FileMethods [issue #10]
+* Added FileMethods#prepare_dir
 
 == 0.1.0 2011/07/07
 

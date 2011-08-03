@@ -220,6 +220,13 @@ module ShellTest
       Dir.glob path(pattern)
     end
 
+    # Creates a directory under method_dir.
+    def prepare_dir(relative_path)
+      target_dir = path(relative_path)
+      FileUtils.mkdir_p(target_dir)
+      target_dir
+    end
+
     # Same as prepare but does not outdent content.
     def _prepare(relative_path, content=nil, &block)
       target = path(relative_path)

@@ -125,6 +125,16 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
+  # prepare_dir test
+  #
+
+  def test_prepare_dir_makes_a_directory_and_all_parent_directories
+    path = prepare_dir('a/b/c')
+    assert_equal File.join(method_dir, 'a/b/c'), path
+    assert_equal true, File.directory?(path)
+  end
+
+  #
   # _prepare test
   #
 
