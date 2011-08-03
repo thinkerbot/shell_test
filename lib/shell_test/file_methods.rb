@@ -263,6 +263,13 @@ module ShellTest
       File.exists?(path) ? File.read(path, length, offset) : nil
     end
 
+    # Returns the formatted string mode (ex '100640') of the file under
+    # method_dir, if it exists.
+    def mode(relative_path)
+      full_path = path(relative_path)
+      File.exists?(full_path) ? sprintf("%o", File.stat(full_path).mode) : nil
+    end
+
     # Removes a file or directory under method_dir, if it exists.
     def remove(relative_path)
       full_path = path(relative_path)

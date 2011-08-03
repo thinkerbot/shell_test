@@ -196,6 +196,20 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
+  # mode test
+  #
+  
+  def test_mode_returns_the_formatted_string_mode_for_a_file_under_method_dir
+    path = prepare('dir/file')
+    FileUtils.chmod(0640, path)
+    assert_equal '100640', mode('dir/file')
+  end
+
+  def test_mode_returns_nil_for_non_existant_files
+    assert_equal nil, mode('dir/file')
+  end
+
+  #
   # remove test
   #
 

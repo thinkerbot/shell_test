@@ -4,7 +4,7 @@
 * Renamed assert_output_equal to assert_str_equal and assert_alike to 
   assert_str_match.
 * Added FileMethods#_prepare and made prepare outdent content [issue #9]
-* Added content and glob to FileMethods [issue #10]
+* Added content, mode, and glob to FileMethods [issue #10]
 
 == 0.1.0 2011/07/07
 
