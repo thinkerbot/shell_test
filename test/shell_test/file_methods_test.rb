@@ -92,12 +92,56 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
+  # _prepare test
+  #
+
+  def test__prepare_makes_a_file_and_all_parent_directories
+    path = _prepare('dir/file')
+    assert_equal true, File.exists?(path)
+    assert_equal '', File.read(path)
+  end
+
+  def test_prepare_returns_an_absolute_path
+    path = _prepare('dir/file')
+    assert_equal File.expand_path(path), path
+  end
+
+  def test__prepare_accepts_content_via_a_block
+    path = _prepare('dir/file') {|io| io << 'content' }
+    assert_equal 'content', File.read(path)
+  end
+
+  def test__prepare_accepts_string_content
+    path = _prepare('dir/file', %{
+      content
+    })
+    assert_equal %{
+      content
+    }, File.read(path)
+  end
+
+  #
   # prepare test
   #
 
-  def test_prepare_makes_a_file_and_all_parent_directories
-    path = prepare('dir/file') {}
-    assert_equal true, File.exists?(path)
+  def test_prepare_documentation
+    path = prepare 'file', %{
+      line one
+      line two
+    }
+    assert_equal "line one\nline two\n", File.read(path)
+  end
+
+  def test_prepare_accepts_content_via_a_block
+    path = prepare('dir/file') {|io| io << 'content' }
+    assert_equal 'content', File.read(path)
+  end
+
+  def test_prepare_outdents_content
+    path = prepare('dir/file', %{
+      content
+    })
+    assert_equal "content\n", File.read(path)
   end
 
   #

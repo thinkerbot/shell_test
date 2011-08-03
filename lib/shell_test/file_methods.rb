@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'shell_test/string_methods'
 
 module ShellTest
   module FileMethods
@@ -124,6 +125,7 @@ module ShellTest
       end
     end
 
+    include StringMethods
     extend ModuleMethods
 
     def setup
@@ -183,7 +185,8 @@ module ShellTest
       path
     end
 
-    def prepare(relative_path, content=nil, &block)
+    # Same as prepare but does not outdent content.
+    def _prepare(relative_path, content=nil, &block)
       target = path(relative_path)
 
       if File.exists?(target)
@@ -198,6 +201,25 @@ module ShellTest
       File.open(target, 'a', &block) if block
 
       target
+    end
+
+    # Creates a file under method_dir with the specified content, which may be
+    # provided as a string or with a block (the block recieves an open File).
+    # If no content is given, then an empty file is created.
+    #
+    # Content provided as a string is outdented (see StringMethods#outdent),
+    # so this syntax is possible:
+    #
+    #   path = prepare 'file', %{
+    #     line one
+    #     line two
+    #   }
+    #   File.read(path)  # => "line one\nline two\n"
+    #
+    # Returns the absolute path to the new file.
+    def prepare(relative_path, content=nil, &block)
+      content = outdent(content) if content
+      _prepare(relative_path, content, &block)
     end
 
     def remove(relative_path)

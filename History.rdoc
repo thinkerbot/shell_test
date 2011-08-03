@@ -3,6 +3,7 @@
 * Split out a StringMethods module [issue #7]
 * Renamed assert_output_equal to assert_str_equal and assert_alike to 
   assert_str_match.
+* Added FileMethods#_prepare and made prepare outdent content [issue #9]
 
 == 0.1.0 2011/07/07
 
