@@ -128,11 +128,18 @@ module ShellTest
     include StringMethods
     extend ModuleMethods
 
+    # Calls cleanup to remove any files left over from previous test runs (for
+    # instance by running with a flag to keep outputs).
     def setup
       super
       cleanup
     end
 
+    # Generic cleanup method.  Returns users to the user_dir then calls
+    # cleanup unless flagged to keep outputs.  If cleanup is called, any empty
+    # directories under method_dir are also removed.
+    #
+    # Be sure to call super if teardown is overridden in a test case.
     def teardown
       Dir.chdir(user_dir)
 
@@ -149,32 +156,50 @@ module ShellTest
       super
     end
 
+    # Returns the absolute path to the current working directory.
     def user_dir
       @user_dir   ||= File.expand_path('.')
     end
 
+    # Returns the absolute path to a directory specific to the current test
+    # class, specifically the class.class_dir expanded relative to the
+    # user_dir.
     def class_dir
       @class_dir  ||= File.expand_path(self.class.class_dir, user_dir)
     end
 
+    # Returns the absolute path to a directory specific to the current test
+    # method, specifically method_name expanded relative to class_dir.
     def method_dir
       @method_dir ||= File.expand_path(method_name.to_s, class_dir)
     end
 
+    # Returns the method name of the current test.
+    #
+    # Really this method is an alias for __name__ which is present in
+    # MiniTest::Unit and reproduces the method_name in Test::Unit.
+    # ShellTest::Unit ensures this method is set up correctly in those
+    # frameworks.  If this module is used in other frameworks, then
+    # method_name must be implemented separately.
     def method_name
       __name__
     end
 
+    # Shortcut to access the class.cleanup_methods.
     def cleanup_methods
       self.class.cleanup_methods
     end
 
+    # Recursively removes paths specified for cleanup in cleanup_methods.
     def cleanup
       if cleanup_paths = cleanup_methods[method_name.to_sym]
         cleanup_paths.each {|relative_path| remove(relative_path) }
       end
     end
 
+    # Expands relative_path relative to method_dir and returns the resulting
+    # absolute path.  Raises an error if the resulting path is not relative to
+    # method_dir.
     def path(relative_path)
       path = File.expand_path(relative_path, method_dir)
 
