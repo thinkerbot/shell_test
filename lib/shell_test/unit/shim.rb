@@ -34,6 +34,8 @@ class Test::Unit::TestResult
     @skips ||= []
   end
 
+  alias shell_test_original_add_error add_error
+
   # Partition errors from a SkipException from other errors and records as
   # them as skips (the error is extended to display as a skip).
   def add_error(error)
