@@ -70,6 +70,26 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
+  # keep_outputs? test
+  #
+
+  def test_keep_outputs_check_returns_true_if_KEEP_OUTPUTS_is_set_to_true_in_ENV
+    current = ENV['KEEP_OUTPUTS']
+    begin
+      ENV['KEEP_OUTPUTS'] = nil
+      assert_equal false, keep_outputs?
+
+      ENV['KEEP_OUTPUTS'] = ''
+      assert_equal false, keep_outputs?
+
+      ENV['KEEP_OUTPUTS'] = 'true'
+      assert_equal true, keep_outputs?
+    ensure
+      ENV['KEEP_OUTPUTS'] = current
+    end
+  end
+
+  #
   # method_dir test
   #
 

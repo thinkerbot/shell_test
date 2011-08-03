@@ -136,14 +136,14 @@ module ShellTest
     end
 
     # Generic cleanup method.  Returns users to the user_dir then calls
-    # cleanup unless flagged to keep outputs.  If cleanup is called, any empty
-    # directories under method_dir are also removed.
+    # cleanup unless keep_outputs? returns true.  If cleanup is called, any
+    # empty directories under method_dir are also removed.
     #
     # Be sure to call super if teardown is overridden in a test case.
     def teardown
       Dir.chdir(user_dir)
 
-      unless ENV["KEEP_OUTPUTS"] == "true"
+      unless keep_outputs?
         cleanup
 
         dir = method_dir
@@ -154,6 +154,11 @@ module ShellTest
       end
 
       super
+    end
+
+    # Returns true if KEEP_OUTPUTS is set to 'true' in ENV.
+    def keep_outputs?
+      ENV["KEEP_OUTPUTS"] == "true"
     end
 
     # Returns the absolute path to the current working directory.
