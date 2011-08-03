@@ -1,5 +1,4 @@
 require 'rake'
-require 'rake/rdoctask'
 require 'rubygems/package_task'
 
 #
@@ -50,15 +49,16 @@ end
 #
 
 desc 'Generate documentation.'
-Rake::RDocTask.new(:rdoc) do |rdoc|
-  spec = gemspec
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.options.concat(spec.rdoc_options)
-  rdoc.rdoc_files.include( spec.extra_rdoc_files )
-
-  files = spec.files.select {|file| file =~ /^lib.*\.rb$/}
-  rdoc.rdoc_files.include( files )
+task :rdoc do
+  spec  = gemspec
+  files =  spec.files.select {|file| File.extname(file) == '.rb' }
+  files += spec.extra_rdoc_files
+  options = spec.rdoc_options.join(' ')
+  
+  Dir.chdir File.expand_path('..', __FILE__) do
+    FileUtils.rm_r('rdoc') if File.exists?('rdoc')
+    sh "rdoc -o rdoc #{options} '#{files.join("' '")}'"
+  end
 end
 
 #
