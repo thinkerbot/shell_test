@@ -222,6 +222,7 @@ module ShellTest
       _prepare(relative_path, content, &block)
     end
 
+    # Removes a file or directory under method_dir, if it exists.
     def remove(relative_path)
       full_path = path(relative_path)
       FileUtils.rm_r(full_path) if File.exists?(full_path)
