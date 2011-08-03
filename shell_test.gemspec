@@ -33,6 +33,7 @@ Gem::Specification.new do |s|
     lib/shell_test/file_methods.rb
     lib/shell_test/regexp_escape.rb
     lib/shell_test/shell_methods.rb
+    lib/shell_test/string_methods.rb
     lib/shell_test/unit.rb
     lib/shell_test/unit/shim.rb
     lib/shell_test/version.rb

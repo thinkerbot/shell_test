@@ -1,4 +1,4 @@
-==
+== 0.2.0 2011/08/03
 
 * Split out a StringMethods module [issue #7]
 * Renamed assert_output_equal to assert_str_equal and assert_alike to 
