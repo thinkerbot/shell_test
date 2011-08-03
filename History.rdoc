@@ -1,3 +1,7 @@
+==
+
+* Split out a StringMethods module [issue #7]
+
 == 0.1.0 2011/07/07
 
 Initial release.
