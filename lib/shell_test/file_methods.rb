@@ -190,29 +190,17 @@ module ShellTest
       __name__
     end
 
-    # Shortcut to access the class.cleanup_methods.
-    def cleanup_methods
-      self.class.cleanup_methods
-    end
-
-    # Recursively removes paths specified for cleanup in cleanup_methods.
-    def cleanup
-      if cleanup_paths = cleanup_methods[method_name.to_sym]
-        cleanup_paths.each {|relative_path| remove(relative_path) }
-      end
-    end
-
     # Expands relative_path relative to method_dir and returns the resulting
     # absolute path.  Raises an error if the resulting path is not relative to
     # method_dir.
     def path(relative_path)
-      path = File.expand_path(relative_path, method_dir)
+      full_path = File.expand_path(relative_path, method_dir)
 
-      unless path.index(method_dir) == 0
+      unless full_path.index(method_dir) == 0
         raise "does not make a path relative to method_dir: #{relative_path.inspect}"
       end
 
-      path
+      full_path
     end
 
     # Globs the pattern under method_dir.
@@ -266,8 +254,8 @@ module ShellTest
 
     # Returns the content of the file under method_dir, if it exists.
     def content(relative_path, length=nil, offset=nil)
-      path = path(relative_path)
-      File.exists?(path) ? File.read(path, length, offset) : nil
+      full_path = path(relative_path)
+      File.exists?(full_path) ? File.read(full_path, length, offset) : nil
     end
 
     # Returns the formatted string mode (ex '100640') of the file under
@@ -281,6 +269,18 @@ module ShellTest
     def remove(relative_path)
       full_path = path(relative_path)
       FileUtils.rm_r(full_path) if File.exists?(full_path)
+    end
+
+    # Shortcut to access the class.cleanup_methods.
+    def cleanup_methods
+      self.class.cleanup_methods
+    end
+
+    # Recursively removes paths specified for cleanup in cleanup_methods.
+    def cleanup
+      if cleanup_paths = cleanup_methods[method_name.to_sym]
+        cleanup_paths.each {|relative_path| remove(relative_path) }
+      end
     end
   end
 end

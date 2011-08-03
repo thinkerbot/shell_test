@@ -224,30 +224,23 @@ class FileMethodsTest < Test::Unit::TestCase
   #
 
   def test_remove_removes_a_file_under_method_dir
-    path = File.join(method_dir, 'dir/file')
+    path = prepare('dir/file')
     dir  = File.dirname(path)
-
-    FileUtils.mkdir_p dir
-    FileUtils.touch path
-
     remove(path)
+
     assert_equal false, File.exists?(path)
     assert_equal true, File.exists?(dir)
   end
 
   def test_remove_removes_a_directory_under_method_dir
-    path = File.join(method_dir, 'dir/file')
-    dir  = File.dirname(path)
-
-    FileUtils.mkdir_p dir
-    FileUtils.touch path
-
+    dir = prepare_dir('a/b')
     remove(dir)
+
     assert_equal false, File.exists?(dir)
   end
 
   def test_remove_raises_no_error_for_non_existant_paths
-    path = File.join(method_dir, 'dir/file')
+    path = path('dir/file')
     assert_equal false, File.exists?(path)
 
     remove(path)
