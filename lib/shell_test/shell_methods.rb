@@ -89,7 +89,7 @@ module ShellTest
       parse_script(script, options).each do |cmd, output, status|
         result = sh(cmd)
 
-        _assert_output_equal(output, result, cmd) if output
+        _assert_str_equal(output, result, cmd) if output
         assert_equal(status, $?.exitstatus, cmd)  if status
       end
     end
@@ -102,7 +102,7 @@ module ShellTest
       parse_script(script, options).each do |cmd, output, status|
         result = sh(cmd)
 
-        _assert_alike(output, result, cmd)       if output
+        _assert_str_match(output, result, cmd)       if output
         assert_equal(status, $?.exitstatus, cmd) if status
       end
     end

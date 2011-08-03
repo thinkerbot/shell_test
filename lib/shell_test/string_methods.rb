@@ -3,11 +3,11 @@ module ShellTest
     # Asserts whether or not the a and b strings are equal, with a more
     # readable output than assert_equal for large strings (especially large
     # strings with significant whitespace).
-    def assert_output_equal(a, b, msg=nil)
-      _assert_output_equal outdent(a), b, msg
+    def assert_str_equal(a, b, msg=nil)
+      _assert_str_equal outdent(a), b, msg
     end
 
-    def _assert_output_equal(a, b, msg=nil)
+    def _assert_str_equal(a, b, msg=nil)
       if a == b
         assert true
       else
@@ -27,12 +27,12 @@ module ShellTest
     # with assert_match.
     #
     # If a is a string it is turned into a RegexpEscape.
-    def assert_alike(a, b, msg=nil)
+    def assert_str_match(a, b, msg=nil)
       a = outdent(a) if a.kind_of?(String)
-      _assert_alike a, b, msg
+      _assert_str_match a, b, msg
     end
 
-    def _assert_alike(a, b, msg=nil)
+    def _assert_str_match(a, b, msg=nil)
       if a.kind_of?(String)
         a = RegexpEscape.new(a)
       end
