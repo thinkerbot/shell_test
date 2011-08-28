@@ -223,7 +223,7 @@ module ShellTest
         FileUtils.rm(target)
       else
         target_dir = File.dirname(target)
-        FileUtils.mkdir_p(target_dir)
+        FileUtils.mkdir_p(target_dir) unless File.exists?(target_dir)
       end
 
       FileUtils.touch(target)
