@@ -128,10 +128,14 @@ module ShellTest
     include StringMethods
     extend ModuleMethods
 
+    # Returns the absolute path to the current working directory.
+    attr_reader :user_dir
+
     # Calls cleanup to remove any files left over from previous test runs (for
     # instance by running with a flag to keep outputs).
     def setup
       super
+      @user_dir = Dir.pwd
       cleanup
     end
 
@@ -159,11 +163,6 @@ module ShellTest
     # Returns true if KEEP_OUTPUTS is set to 'true' in ENV.
     def keep_outputs?
       ENV["KEEP_OUTPUTS"] == "true"
-    end
-
-    # Returns the absolute path to the current working directory.
-    def user_dir
-      @user_dir   ||= File.expand_path('.')
     end
 
     # Returns the absolute path to a directory specific to the current test
