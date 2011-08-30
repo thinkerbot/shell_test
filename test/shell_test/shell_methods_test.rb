@@ -187,6 +187,14 @@ echo
     }
   end
 
+  def test_assert_script_for_multiple_commands_with_context
+    assert_script %{
+      $ VALUE=one
+      $ echo $VALUE
+      one
+    }
+  end
+
   def test_assert_script_fails_on_mismatch
     assert_raises(TestUnitErrorClass) { assert_script %Q{printf ""\nflunk} }
     assert_raises(TestUnitErrorClass) { assert_script %Q{echo pass\nflunk} }
