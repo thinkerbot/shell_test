@@ -5,28 +5,14 @@ module ShellTest
   class Session
     attr_reader :cmd
     attr_reader :steps
-    attr_reader :prompts
 
-    def initialize(cmd, prompts={})
+    def initialize(cmd)
       @cmd = cmd
       @steps = []
-      @prompts = {}
-      prompts.each_pair {|key, value| register(key, value) }
-    end
-
-    def register(prompt, pattern=prompt)
-      unless pattern.kind_of?(Regexp)
-        pattern = Regexp.new pattern.to_s
-      end
-      prompts[prompt] = pattern
-    end
-
-    def resolve_prompt(prompt)
-      prompts[prompt] || Regexp.new(prompt.to_s)
     end
 
     def on(prompt, input, timeout=nil, &callback)
-      steps << [resolve_prompt(prompt), input, timeout, callback]
+      steps << [prompt, input, timeout, callback]
       self
     end
 

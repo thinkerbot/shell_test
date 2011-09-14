@@ -1,5 +1,5 @@
-require File.expand_path('../../test_helper', __FILE__)
-require 'shell_test/session'
+require File.expand_path("../../test_helper", __FILE__)
+require "shell_test/session"
 
 class SessionTest < Test::Unit::TestCase
   Session = ShellTest::Session
@@ -8,7 +8,7 @@ class SessionTest < Test::Unit::TestCase
 
   def setup
     super
-    @session = Session.new '/bin/sh', :ps1 => /^\$ /, :ps2 => /^\> /
+    @session = Session.new "/bin/sh"
   end
 
   # Sets the specified ENV variables and returns the *current* env.
@@ -49,14 +49,14 @@ class SessionTest < Test::Unit::TestCase
       end
     end
   end
-  
+
   #
   # run test
   #
 
   def test_run_with_non_interactive_command
-    session = Session.new 'echo hello world'
-    buffer = ''
+    session = Session.new "echo hello world"
+    buffer = ""
     session.run {|str| buffer << str }
 
     assert_equal "hello world\r\n", buffer
@@ -65,7 +65,7 @@ class SessionTest < Test::Unit::TestCase
 
   def test_run_captures_exit_status_of_non_interactive_command
     session = Session.new %{ruby -e "puts 'hello world'; exit 8"}
-    buffer = ''
+    buffer = ""
     session.run {|str| buffer << str }
 
     assert_equal "hello world\r\n", buffer
@@ -73,11 +73,11 @@ class SessionTest < Test::Unit::TestCase
   end
 
   def test_run_with_non_interactive_shell
-    session.on :ps1, "echo abc\n"
-    session.on :ps1, "exit 8\n"
-    buffer = ''
+    session.on(/^\$ /, "echo abc\n")
+    session.on(/^\$ /, "exit 8\n")
+    buffer = ""
 
-    with_env('PS1' => '$ ', 'PS2' => '> ') do
+    with_env("PS1" => "$ ", "PS2" => "> ") do
       session.run {|str| buffer << str }
     end
 
