@@ -55,67 +55,50 @@ class CountdownTimerTest < Test::Unit::TestCase
     assert_equal 0, timer.start_time
   end
 
-  def test_start_sets_finish_time_as_start_time_plus_duration
+  def test_start_sets_stop_time_as_start_time_plus_duration
     timer.start
-    assert_equal 100, timer.finish_time
+    assert_equal 100, timer.stop_time
   end
 
-  def test_start_sets_mark_time_as_finish_time
+  def test_start_sets_mark_time_as_stop_time
     timer.start
-    assert_equal timer.finish_time, timer.mark_time
+    assert_equal timer.stop_time, timer.mark_time
   end
 
   #
-  # finish test
+  # stop test
   #
 
-  def test_finish_returns_time_elapsed_since_start_as_dictated_by_current_time
+  def test_stop_returns_time_elapsed_since_start_as_dictated_by_current_time
     timer.instrument_times 10, 18
     timer.start
-    assert_equal 8, timer.finish
+    assert_equal 8, timer.stop
   end
 
-  def test_finish_sets_times_to_nil
+  def test_stop_sets_times_to_zero
     timer.start
-    timer.finish
-    assert_equal nil, timer.start_time
-    assert_equal nil, timer.finish_time
-    assert_equal nil, timer.mark_time
+    timer.stop
+    assert_equal 0, timer.start_time
+    assert_equal 0, timer.stop_time
+    assert_equal 0, timer.mark_time
   end
 
   #
-  # running? test
+  # time_to_stop test
   #
 
-  def test_running_check_returns_true_if_started
-    assert_equal false, timer.running?
+  def test_time_to_stop_returns_duration_from_current_time_to_stop_time
     timer.start
-    assert_equal true, timer.running?
-    timer.finish
-    assert_equal false, timer.running?
+    assert_equal 90, timer.time_to_stop
+    assert_equal 80, timer.time_to_stop
+    assert_equal 70, timer.time_to_stop
   end
 
-  #
-  # time_to_finish test
-  #
-
-  def test_time_to_finish_returns_duration_from_current_time_to_finish_time
-    timer.start
-    assert_equal 90, timer.time_to_finish
-    assert_equal 80, timer.time_to_finish
-    assert_equal 70, timer.time_to_finish
-  end
-
-  def test_time_to_finish_returns_negative_if_current_time_is_past_finish_time
+  def test_time_to_stop_returns_negative_if_current_time_is_past_stop_time
     timer.instrument_times 0, 110
     timer.start
-    assert_equal 100, timer.finish_time
-    assert_equal(-10, timer.time_to_finish)
-  end
-
-  def test_time_to_finish_raises_error_if_not_running
-    err = assert_raises(RuntimeError) { timer.time_to_finish }
-    assert_equal "timer is not running", err.message
+    assert_equal 100, timer.stop_time
+    assert_equal(-10, timer.time_to_stop)
   end
 
   #
@@ -128,18 +111,30 @@ class CountdownTimerTest < Test::Unit::TestCase
     assert_equal 60, timer.mark_time
   end
 
-  def test_set_mark_preserves_current_mark_if_duration_is_nil
+  def test_set_mark_preserves_current_mark_if_duration_is_negative
     timer.start
     timer.set_mark(50)
     assert_equal 60, timer.mark_time
 
-    timer.set_mark(nil)
+    timer.set_mark(-1)
     assert_equal 60, timer.mark_time
   end
 
-  def test_set_mark_sets_mark_time_to_finish_time_if_greater_than_finish_time
+  def test_set_mark_sets_mark_time_to_stop_time_if_duration_is_nil
     timer.start
-    assert_equal 100, timer.finish_time
+    assert_equal 100, timer.stop_time
+
+    timer.set_mark(50)
+    assert_equal 60, timer.mark_time
+
+    timer.set_mark(nil)
+    assert_equal 100, timer.mark_time
+  end
+
+  def test_set_mark_sets_mark_time_to_stop_time_if_greater_than_stop_time
+    timer.start
+    assert_equal 100, timer.stop_time
+
     timer.set_mark(200)
     assert_equal 100, timer.mark_time
   end
@@ -162,10 +157,5 @@ class CountdownTimerTest < Test::Unit::TestCase
     timer.start
     assert_equal 100, timer.mark_time
     assert_equal(-10, timer.time_to_mark)
-  end
-
-  def test_time_to_mark_raises_error_if_not_running
-    err = assert_raises(RuntimeError) { timer.time_to_mark }
-    assert_equal "timer is not running", err.message
   end
 end

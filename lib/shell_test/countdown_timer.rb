@@ -2,7 +2,7 @@ module ShellTest
    class CountdownTimer
     attr_reader :duration
     attr_reader :start_time
-    attr_reader :finish_time
+    attr_reader :stop_time
     attr_reader :mark_time
 
     def initialize(duration)
@@ -15,48 +15,41 @@ module ShellTest
     end
 
     def reset
-      @start_time  = nil
-      @finish_time = nil
-      @mark_time   = nil
+      @start_time = 0
+      @stop_time  = 0
+      @mark_time  = 0
     end
 
     def start
       reset
-      @start_time  = current_time
-      @finish_time = start_time + duration
-      @mark_time   = finish_time
+      @start_time = current_time
+      @stop_time  = start_time + duration
+      @mark_time  = stop_time
     end
 
-    def running?
-      start_time != nil
-    end
-
-    def finish
-      elapsed_time = start_time ? current_time - start_time : nil
+    def stop
+      elapsed_time = current_time - start_time
       reset
       elapsed_time
     end
 
-    def time_to_finish
-      unless running?
-        raise "timer is not running"
-      end
-      finish_time - current_time
+    def time_to_stop
+      stop_time - current_time
     end
 
     def set_mark(duration)
-      if duration.nil? || !running?
-        return mark_time
+      case
+      when duration.nil?
+        @mark_time = stop_time
+      when duration < 0 
+        mark_time
+      else
+        mtime = current_time + duration
+        @mark_time = mtime > stop_time ? stop_time : mtime
       end
-
-      mtime = current_time + duration
-      @mark_time = mtime > finish_time ? finish_time : mtime
     end
 
     def time_to_mark
-      unless running?
-        raise "timer is not running"
-      end
       mark_time - current_time
     end
   end
