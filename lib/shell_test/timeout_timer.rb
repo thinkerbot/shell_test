@@ -1,17 +1,17 @@
 module ShellTest
-   class CountdownTimer
-    attr_reader :duration
+  class TimeoutTimer
+    attr_reader :clock
     attr_reader :start_time
     attr_reader :stop_time
     attr_reader :mark_time
 
-    def initialize(duration)
-      @duration = duration
+    def initialize(clock=Time)
+      @clock = clock
       reset
     end
 
     def current_time
-      Time.now.to_i
+      clock.now
     end
 
     def reset
@@ -20,10 +20,10 @@ module ShellTest
       @mark_time  = 0
     end
 
-    def start
+    def start(max_run_time=60)
       reset
       @start_time = current_time
-      @stop_time  = start_time + duration
+      @stop_time  = start_time + max_run_time
       @mark_time  = stop_time
     end
 
@@ -33,11 +33,7 @@ module ShellTest
       elapsed_time
     end
 
-    def time_to_stop
-      stop_time - current_time
-    end
-
-    def set_mark(duration)
+    def set_timeout(duration)
       case
       when duration.nil?
         @mark_time = stop_time
@@ -49,7 +45,7 @@ module ShellTest
       end
     end
 
-    def time_to_mark
+    def timeout
       mark_time - current_time
     end
   end
