@@ -4,9 +4,9 @@ module ShellTest
   class Agent
     class << self
       def run(cmd)
-        PTY.spawn(cmd) do |stdin,stdout,pid|
+        PTY.spawn(cmd) do |slave, master, pid|
           begin
-            yield new(stdin, stdout)
+            yield new(master, slave)
           rescue
             Process.kill(9, pid)
             raise
@@ -17,75 +17,60 @@ module ShellTest
       end
     end
 
-    attr_reader :stdin
-    attr_reader :stdout
+    attr_reader :master
+    attr_reader :slave
     attr_reader :timer
 
-    def initialize(stdin, stdout)
-      @stdin  = stdin
-      @stdout = stdout
-      @timer  = TimeoutTimer.new
+    def initialize(master, slave, timer = TimeoutTimer.new)
+      @master = master
+      @slave  = slave
+      @timer  = timer
     end
 
     def start_run(max_run_time)
       timer.start(max_run_time)
     end
 
-    def run(steps)
-      steps.each do |prompt, input, timeout, callback|
-        buffer = read_until(prompt)
-
-        if block_given?
-          yield buffer
-        end
-
-        if callback
-          callback.call(buffer)
-        end
-
-        if input
-          stdout.print input
-        end
-      end
-    end
-
+    # Returns time elapsed
     def stop_run
-      if block_given?
-        buffer = read_until(nil)
-        yield buffer
-      end
-
-      timer.stop # returns time elapsed
+      timer.stop
     end
 
-    def read_until(prompt, timeout=nil)
-      # pos - sets mark at current time + timeout (up to max)
-      # neg - preserves current mark
-      # nil - sets mark to end time
+    # Timeout:
+    #
+    #   pos - sets mark at current time + timeout (up to max_run_time)
+    #   neg - preserves current mark
+    #   nil - sets mark to end time
+    #
+    def expect(prompt, timeout=nil)
       timer.set_timeout(timeout)
 
       buffer = ''
       while true
-        if !IO.select([stdin],nil,nil,timer.timeout)
+        if !IO.select([slave],nil,nil,timer.timeout)
           raise TimeoutError, "waiting for: #{prompt.inspect}\n#{buffer.inspect}"
         end
 
-        if stdin.eof?
+        if slave.eof?
           break
         end
 
         # Use readpartial instead of read because it will not block if the
         # length is not fully available.
         #
-        # Use readpartial+select instead of read_nonblock to avoid polling
-        # in a tight loop.
-        buffer << stdin.readpartial(1024)
+        # Use readpartial+select instead of read_nonblock to avoid polling in
+        # a tight loop.
+        buffer << slave.readpartial(1024)
 
         if prompt && buffer =~ prompt
           break
         end
       end
       buffer
+    end
+
+    def write(input)
+      master.print input
     end
 
     class TimeoutError < RuntimeError
