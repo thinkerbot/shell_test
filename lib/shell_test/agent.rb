@@ -2,6 +2,21 @@ require 'shell_test/timeout_timer'
 
 module ShellTest
   class Agent
+    class << self
+      def run(cmd)
+        PTY.spawn(cmd) do |stdin,stdout,pid|
+          begin
+            yield new(stdin, stdout)
+          rescue
+            Process.kill(9, pid)
+            raise
+          ensure
+            Process.wait(pid)
+          end
+        end
+      end
+    end
+
     attr_reader :stdin
     attr_reader :stdout
     attr_reader :timer

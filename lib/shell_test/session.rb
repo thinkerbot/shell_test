@@ -17,18 +17,10 @@ module ShellTest
     end
 
     def run(max_run_time=1, &block)
-      PTY.spawn(cmd) do |stdin,stdout,pid|
-        begin
-          agent = Agent.new(stdin, stdout)
-          agent.start_run(max_run_time)
-          agent.run(steps, &block)
-          agent.stop_run(&block)
-        rescue
-          Process.kill(9, pid)
-          raise
-        ensure
-          Process.wait(pid)
-        end
+      Agent.run(cmd) do |agent|
+        agent.start_run(max_run_time)
+        agent.run(steps, &block)
+        agent.stop_run(&block)
       end
     end
   end
