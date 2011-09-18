@@ -127,11 +127,11 @@ class TimeoutTimerTest < Test::Unit::TestCase
     assert_equal 20, timer.timeout
   end
 
-  def test_timeout_returns_negative_if_current_time_is_past_mark_time
+  def test_timeout_returns_zero_if_current_time_is_past_mark_time
     timer = TimeoutTimer.new Clock.new(0, 110)
     timer.start(100)
 
     assert_equal 100, timer.mark_time
-    assert_equal(-10, timer.timeout)
+    assert_equal(0, timer.timeout)
   end
 end

@@ -46,7 +46,8 @@ module ShellTest
     end
 
     def timeout
-      mark_time - current_time
+      timeout = mark_time - current_time
+      timeout < 0 ? 0 : timeout
     end
   end
 end
