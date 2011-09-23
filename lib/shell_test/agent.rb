@@ -62,10 +62,10 @@ module ShellTest
       buffer = ''
       while true
         if !IO.select([slave],nil,nil,timer.timeout)
-          raise TimeoutError, "waiting for: #{regexp.inspect}\n#{buffer}"
+          raise TimeoutError.new(regexp, buffer)
         end
 
-        if slave.eof?
+        if regexp.nil? && slave.eof?
           break
         end
 
@@ -88,7 +88,19 @@ module ShellTest
       master.print input
     end
 
+    def close
+      master.close unless master.closed?
+      slave.close unless slave.closed?
+    end
+
     class TimeoutError < RuntimeError
+      attr_reader :regexp
+      attr_reader :buffer
+      def initialize(regexp, buffer)
+        @regexp = regexp
+        @buffer = buffer
+        super "waiting for: #{regexp.inspect}\n#{buffer}"
+      end
     end
   end
 end
