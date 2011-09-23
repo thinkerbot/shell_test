@@ -23,20 +23,6 @@ class TimeoutTimerTest < Test::Unit::TestCase
     @timer = TimeoutTimer.new
   end
 
-  #
-  # current_time test
-  #
-
-  def test_current_time_returns_now_as_specified_by_clock
-    timer = TimeoutTimer.new Clock.new(10, 20, 30)
-
-    assert_equal 10, timer.current_time
-    assert_equal 20, timer.current_time
-    assert_equal 30, timer.current_time
-    assert_equal nil, timer.current_time
-  end
-
-  #
   # start test
   #
 
@@ -68,14 +54,14 @@ class TimeoutTimerTest < Test::Unit::TestCase
   end
 
   #
-  # set_timeout test
+  # timeout= test
   #
 
   def test_set_timeout_sets_mark_time_relative_to_current_time
     timer = TimeoutTimer.new Clock.new(0, 10)
     timer.start
 
-    timer.set_timeout(50)
+    timer.timeout = 50
     assert_equal 60, timer.mark_time
   end
 
@@ -83,10 +69,10 @@ class TimeoutTimerTest < Test::Unit::TestCase
     timer = TimeoutTimer.new Clock.new(0, 10, 20)
     timer.start
 
-    timer.set_timeout(50)
+    timer.timeout = 50
     assert_equal 60, timer.mark_time
 
-    timer.set_timeout(-1)
+    timer.timeout = -1
     assert_equal 60, timer.mark_time
   end
 
@@ -96,10 +82,10 @@ class TimeoutTimerTest < Test::Unit::TestCase
 
     assert_equal 100, timer.stop_time
 
-    timer.set_timeout(50)
+    timer.timeout = 50
     assert_equal 60, timer.mark_time
 
-    timer.set_timeout(nil)
+    timer.timeout = nil
     assert_equal 100, timer.mark_time
   end
 
@@ -109,7 +95,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
 
     assert_equal 100, timer.stop_time
 
-    timer.set_timeout(200)
+    timer.timeout = 200
     assert_equal 100, timer.mark_time
   end
 
@@ -120,7 +106,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   def test_timeout_returns_duration_from_current_mark_time
     timer = TimeoutTimer.new Clock.new(0, 0, 10, 20, 30)
     timer.start(100)
-    timer.set_timeout(50)
+    timer.timeout = 50
 
     assert_equal 40, timer.timeout
     assert_equal 30, timer.timeout

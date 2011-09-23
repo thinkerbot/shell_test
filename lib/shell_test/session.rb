@@ -1,4 +1,5 @@
 require 'shell_test/agent'
+require 'shell_test/timeout_timer'
 require 'pty'
 
 module ShellTest
@@ -18,6 +19,7 @@ module ShellTest
 
     def run(max_run_time=1)
       Agent.run(cmd) do |agent|
+        agent.timer = TimeoutTimer.new
         agent.timer.start(max_run_time)
 
         steps.each do |prompt, input, timeout, callback|

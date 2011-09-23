@@ -1,5 +1,5 @@
-require 'shell_test/timeout_timer'
 require 'pty'
+require 'shell_test/countdown_timer'
 
 module ShellTest
   class Agent
@@ -28,13 +28,16 @@ module ShellTest
     # The pty slave
     attr_reader :slave
 
-    # A timer tracking timeouts
-    attr_reader :timer
+    # The timer managing timeouts.  The timer ensures that the timeouts used
+    # by expect are never negative, or nil to indicate no timeout.  Timeouts
+    # are set on the timer using `timer.timeout=` and retrieved via
+    # `timer.timeout`.
+    attr_accessor :timer
 
-    def initialize(master, slave, timer = TimeoutTimer.new)
+    def initialize(master, slave)
       @master = master
       @slave  = slave
-      @timer  = timer
+      @timer  = CountdownTimer.new
     end
 
     # Reads from the slave until the regexp is matched and returns the
@@ -43,18 +46,6 @@ module ShellTest
     #
     # A timeout may be given.  If the slave doesn't produce the expected
     # string (or eof) within the timeout then expect raises an error.
-    #
-    # ==== Timeout
-    #
-    # The timeout is designed to allow incremental timeouts in a multi-step
-    # sessions, bounded by a maximum run time (see start_run).  As such the
-    # timeout actually defines a mark and the effective timeout is the time to
-    # that mark.
-    #
-    #   timeout value   effect
-    #   positive        sets mark at current time + timeout (up to max_run_time)
-    #   negative        preserves current mark
-    #   nil             sets mark to end time
     #
     # ==== Partial Length
     #
@@ -66,7 +57,7 @@ module ShellTest
     # from the slave than is necessary to match the regexp.
     #
     def expect(regexp, timeout=nil, partial_len=1)
-      timer.set_timeout(timeout)
+      timer.timeout = timeout
 
       buffer = ''
       while true

@@ -10,10 +10,6 @@ module ShellTest
       reset
     end
 
-    def current_time
-      clock.now
-    end
-
     def reset
       @start_time = 0
       @stop_time  = 0
@@ -22,31 +18,31 @@ module ShellTest
 
     def start(max_run_time=60)
       reset
-      @start_time = current_time
+      @start_time = clock.now
       @stop_time  = start_time + max_run_time
       @mark_time  = stop_time
     end
 
     def stop
-      elapsed_time = current_time - start_time
+      elapsed_time = clock.now - start_time
       reset
       elapsed_time
     end
 
-    def set_timeout(duration)
+    def timeout=(timeout)
       case
-      when duration.nil?
+      when timeout.nil?
         @mark_time = stop_time
-      when duration < 0 
+      when timeout < 0 
         mark_time
       else
-        mtime = current_time + duration
+        mtime = clock.now + timeout
         @mark_time = mtime > stop_time ? stop_time : mtime
       end
     end
 
     def timeout
-      timeout = mark_time - current_time
+      timeout = mark_time - clock.now
       timeout < 0 ? 0 : timeout
     end
   end
