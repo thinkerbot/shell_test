@@ -18,7 +18,7 @@ module ShellTest
 
     def run(max_run_time=1)
       Agent.run(cmd) do |agent|
-        agent.start_run(max_run_time)
+        agent.timer.start(max_run_time)
 
         steps.each do |prompt, input, timeout, callback|
           buffer = agent.expect(prompt, timeout)
@@ -41,7 +41,7 @@ module ShellTest
           yield buffer
         end
 
-        agent.stop_run
+        agent.timer.stop
       end
     end
   end

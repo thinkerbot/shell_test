@@ -28,23 +28,13 @@ module ShellTest
     # The pty slave
     attr_reader :slave
 
-    # A timer tracking timeouts up to a maximum run time
+    # A timer tracking timeouts
     attr_reader :timer
 
     def initialize(master, slave, timer = TimeoutTimer.new)
       @master = master
       @slave  = slave
       @timer  = timer
-    end
-
-    # Starts a run by setting the timer to timeout after max_run_time seconds.
-    def start_run(max_run_time)
-      timer.start(max_run_time)
-    end
-
-    # Stops the timer and returns the elapsed since start_run.
-    def stop_run
-      timer.stop
     end
 
     # Reads from the slave until the regexp is matched and returns the
