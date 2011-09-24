@@ -12,7 +12,7 @@ module ShellTest
         def run(cmd) # :yields: agent
           PTY.spawn(cmd) do |slave, master, pid|
             begin
-              yield new(master, slave)
+              return yield(new(master, slave))
             rescue
               Process.kill(9, pid)
               raise

@@ -27,6 +27,11 @@ class AgentTest < Test::Unit::TestCase
     assert_equal 8, $?.exitstatus
   end
 
+  def test_run_returns_block_output
+    result = Agent.run('/bin/sh') {|agent| agent.write("exit\n"); :result }
+    assert_equal :result, result
+  end
+
   #
   # expect test
   #
