@@ -8,7 +8,7 @@ module ShellTest
       # block. Run ensures the PTY process is killed upon errors, and but
       # re-raises the error for additional handling.  Lastly, run sets the
       # command status to $? upon completion.
-      def run(cmd)
+      def run(cmd) # :yields: agent
         PTY.spawn(cmd) do |slave, master, pid|
           begin
             yield new(master, slave)

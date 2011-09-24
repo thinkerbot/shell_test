@@ -17,6 +17,17 @@ class AgentTest < Test::Unit::TestCase
   end
 
   #
+  # run test
+  #
+
+  def test_run_sets_exit_status
+    Agent.run('/bin/sh') do |agent|
+      agent.write "exit 8\n"
+    end
+    assert_equal 8, $?.exitstatus
+  end
+
+  #
   # expect test
   #
 
