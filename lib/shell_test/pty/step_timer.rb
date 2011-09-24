@@ -4,46 +4,62 @@ module ShellTest
       attr_reader :clock
       attr_reader :start_time
       attr_reader :stop_time
-      attr_reader :mark_time
+      attr_reader :step_time
 
       def initialize(clock=Time)
         @clock = clock
         reset
       end
 
+      def current_time
+        clock.now.to_f
+      end
+
       def reset
-        @start_time = 0
-        @stop_time  = 0
-        @mark_time  = 0
+        @start_time = nil
+        @stop_time  = nil
+        @step_time  = 0
       end
 
       def start(max_run_time=60)
         reset
-        @start_time = clock.now
+        @start_time = current_time
         @stop_time  = start_time + max_run_time
-        @mark_time  = stop_time
+        @step_time  = stop_time
+      end
+
+      def running?
+        start_time.nil? || stop_time.nil? ? false : true
       end
 
       def stop
-        elapsed_time = clock.now - start_time
-        reset
-        elapsed_time
+        if running?
+          elapsed_time = current_time - start_time
+          reset
+          elapsed_time
+        else
+          nil
+        end
       end
 
       def timeout=(timeout)
+        unless running?
+          raise "cannot set timeout unless running"
+        end
+
         case
         when timeout.nil?
-          @mark_time = stop_time
+          @step_time = stop_time
         when timeout < 0 
-          mark_time
+          step_time
         else
-          mtime = clock.now + timeout
-          @mark_time = mtime > stop_time ? stop_time : mtime
+          mtime = current_time + timeout
+          @step_time = mtime > stop_time ? stop_time : mtime
         end
       end
 
       def timeout
-        timeout = mark_time - clock.now
+        timeout = step_time - current_time
         timeout < 0 ? 0 : timeout
       end
     end
