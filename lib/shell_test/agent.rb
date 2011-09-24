@@ -42,10 +42,11 @@ module ShellTest
 
     # Reads from the slave until the regexp is matched and returns the
     # resulting string.  If a nil regexp is given then expect reads until the
-    # slave eof.
+    # slave eof. A timeout may be given.
     #
-    # A timeout may be given.  If the slave doesn't produce the expected
-    # string (or eof) within the timeout then expect raises an error.
+    # If the slave doesn't produce the expected string within the timeout then
+    # expect raises a ReadError.  A ReadError will be also be raised if the
+    # slave eof is reached before the regexp matches.
     #
     # ==== Partial Length
     #
@@ -62,7 +63,7 @@ module ShellTest
       buffer = ''
       while true
         if !IO.select([slave],nil,nil,timer.timeout)
-          raise TimeoutError.new(regexp, buffer)
+          raise ReadError.new("timeout", buffer)
         end
 
         if regexp.nil? && slave.eof?
@@ -74,7 +75,11 @@ module ShellTest
         #
         # Use readpartial+select instead of read_nonblock to avoid polling in
         # a tight loop.
-        buffer << slave.readpartial(partial_len)
+        begin
+          buffer << slave.readpartial(partial_len)
+        rescue EOFError
+          raise ReadError.new($!.message, buffer)
+        end
 
         if regexp && buffer =~ regexp
           break
@@ -83,23 +88,33 @@ module ShellTest
       buffer
     end
 
+    # Read to the end of the slave.  Raises a ReadError if the slave eof is
+    # not reached within the timeout.
+    def read(timeout=nil)
+      expect nil, timeout, 4096
+    end
+
     # Writes to the master.
     def write(input)
       master.print input
     end
 
+    # Closes the master and slave.
     def close
-      master.close unless master.closed?
-      slave.close unless slave.closed?
+      unless master.closed?
+        master.close
+      end
+      unless slave.closed?
+        slave.close
+      end
     end
 
-    class TimeoutError < RuntimeError
-      attr_reader :regexp
+    class ReadError < RuntimeError
       attr_reader :buffer
-      def initialize(regexp, buffer)
-        @regexp = regexp
+
+      def initialize(message, buffer)
         @buffer = buffer
-        super "waiting for: #{regexp.inspect}\n#{buffer}"
+        super message
       end
     end
   end
