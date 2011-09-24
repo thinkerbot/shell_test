@@ -1,8 +1,8 @@
-require File.expand_path('../../test_helper', __FILE__)
-require 'shell_test/countdown_timer'
+require File.expand_path('../../../test_helper', __FILE__)
+require 'shell_test/pty/countdown_timer'
 
 class CountdownTimerTest < Test::Unit::TestCase
-  CountdownTimer = ShellTest::CountdownTimer
+  CountdownTimer = ShellTest::Pty::CountdownTimer
 
   class Clock
     attr_reader :times

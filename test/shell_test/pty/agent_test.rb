@@ -1,8 +1,8 @@
-require File.expand_path("../../test_helper", __FILE__)
-require "shell_test/agent"
+require File.expand_path("../../../test_helper", __FILE__)
+require "shell_test/pty/agent"
 
 class AgentTest < Test::Unit::TestCase
-  Agent = ShellTest::Agent
+  Agent = ShellTest::Pty::Agent
 
   attr_accessor :agent
 

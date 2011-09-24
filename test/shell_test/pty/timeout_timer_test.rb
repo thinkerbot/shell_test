@@ -1,8 +1,8 @@
-require File.expand_path('../../test_helper', __FILE__)
-require 'shell_test/timeout_timer'
+require File.expand_path('../../../test_helper', __FILE__)
+require 'shell_test/pty/timeout_timer'
 
 class TimeoutTimerTest < Test::Unit::TestCase
-  TimeoutTimer = ShellTest::TimeoutTimer
+  TimeoutTimer = ShellTest::Pty::TimeoutTimer
 
   class Clock
     attr_reader :times
