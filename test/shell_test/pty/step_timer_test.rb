@@ -1,8 +1,8 @@
 require File.expand_path('../../../test_helper', __FILE__)
-require 'shell_test/pty/timeout_timer'
+require 'shell_test/pty/step_timer'
 
-class TimeoutTimerTest < Test::Unit::TestCase
-  TimeoutTimer = ShellTest::Pty::TimeoutTimer
+class StepTimerTest < Test::Unit::TestCase
+  StepTimer = ShellTest::Pty::StepTimer
 
   class Clock
     attr_reader :times
@@ -20,14 +20,14 @@ class TimeoutTimerTest < Test::Unit::TestCase
 
   def setup
     super
-    @timer = TimeoutTimer.new
+    @timer = StepTimer.new
   end
 
   # start test
   #
 
   def test_start_sets_times_relative_to_current_time
-    timer = TimeoutTimer.new Clock.new(10)
+    timer = StepTimer.new Clock.new(10)
     timer.start(100)
 
     assert_equal 10, timer.start_time
@@ -40,7 +40,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   #
 
   def test_stop_returns_time_elapsed_since_start_as_determined_by_current_time
-    timer = TimeoutTimer.new Clock.new(0, 8)
+    timer = StepTimer.new Clock.new(0, 8)
     timer.start
     assert_equal 8, timer.stop
   end
@@ -58,7 +58,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   #
 
   def test_set_timeout_sets_mark_time_relative_to_current_time
-    timer = TimeoutTimer.new Clock.new(0, 10)
+    timer = StepTimer.new Clock.new(0, 10)
     timer.start
 
     timer.timeout = 50
@@ -66,7 +66,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   end
 
   def test_set_timeout_preserves_current_mark_if_duration_is_negative
-    timer = TimeoutTimer.new Clock.new(0, 10, 20)
+    timer = StepTimer.new Clock.new(0, 10, 20)
     timer.start
 
     timer.timeout = 50
@@ -77,7 +77,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   end
 
   def test_set_timeout_sets_mark_time_to_stop_time_if_duration_is_nil
-    timer = TimeoutTimer.new Clock.new(0, 10, 20)
+    timer = StepTimer.new Clock.new(0, 10, 20)
     timer.start(100)
 
     assert_equal 100, timer.stop_time
@@ -90,7 +90,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   end
 
   def test_set_timeout_sets_mark_time_to_stop_time_if_greater_than_stop_time
-    timer = TimeoutTimer.new Clock.new(0, 10)
+    timer = StepTimer.new Clock.new(0, 10)
     timer.start(100)
 
     assert_equal 100, timer.stop_time
@@ -104,7 +104,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   #
 
   def test_timeout_returns_duration_from_current_mark_time
-    timer = TimeoutTimer.new Clock.new(0, 0, 10, 20, 30)
+    timer = StepTimer.new Clock.new(0, 0, 10, 20, 30)
     timer.start(100)
     timer.timeout = 50
 
@@ -114,7 +114,7 @@ class TimeoutTimerTest < Test::Unit::TestCase
   end
 
   def test_timeout_returns_zero_if_current_time_is_past_mark_time
-    timer = TimeoutTimer.new Clock.new(0, 110)
+    timer = StepTimer.new Clock.new(0, 110)
     timer.start(100)
 
     assert_equal 100, timer.mark_time
