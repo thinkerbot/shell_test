@@ -13,7 +13,7 @@ module ShellTest
       # by expect are never negative, or nil to indicate no timeout.  Timeouts
       # are set on the timer using `timer.timeout=` and retrieved via
       # `timer.timeout`.
-      attr_accessor :timer
+      attr_reader :timer
 
       # The length of each chunk read from slave by expect. A larger partial
       # length may be specified to speed up expect when the regexp is intended
@@ -55,8 +55,10 @@ module ShellTest
           # Use readpartial instead of read because it will not block if the
           # length is not fully available.
           #
-          # Use readpartial+select instead of read_nonblock to avoid polling in
-          # a tight loop.
+          # Use readpartial+select instead of read_nonblock to avoid polling
+          # in a tight loop.
+          #
+          # Use readpartial instead of getc to allow larger partial lengths.
           begin
             buffer << slave.readpartial(partial_len)
           rescue EOFError

@@ -8,17 +8,13 @@ module ShellTest
       include Utils
 
       attr_reader :shell
+      attr_reader :env
       attr_reader :steps
-      attr_reader :opts
 
-      def initialize(shell='/bin/sh', opts={})
+      def initialize(shell='/bin/sh', env={})
         @shell = shell
+        @env = {'PS1' => '$ ', 'PS2' => '> '}.merge(env)
         @steps = []
-        @opts = {
-          :ps1 => '$ ', :ps2 => '> ',
-          :partial_len => 1024,
-          :clock => Time
-        }
       end
 
       def on(prompt, input, timeout=nil)
@@ -31,21 +27,14 @@ module ShellTest
         
       end
 
-      def run(max_run_time=1)
+      def run(opts={})
+        opts = {:clock => Time, :max_run_time => 5}
         timer = StepTimer.new(opts[:clock])
-        attrs = {
-          :timer => timer, 
-          :partial_len => opts[:partial_len]
-        }
-        env = {
-          'PS1' => opts[:ps1],
-          'PS2' => opts[:ps2]
-        }
 
         with_env(env) do
           spawn(shell) do |master, slave|
-            agent = Agent.new(master, slave, opts)
-            timer.start(max_run_time)
+            agent = Agent.new(master, slave, :timer => timer, :partial_len => 1024)
+            timer.start(opts[:max_run_time])
 
             steps.each do |prompt, input, timeout|
               buffer = agent.expect(prompt, timeout)
@@ -69,9 +58,9 @@ module ShellTest
         end
       end
 
-      def capture(max_run_time=1)
+      def capture(opts={})
         buffer = []
-        run(max_run_time) {|str| buffer << str }
+        run(opts) {|str| buffer << str }
         buffer.join
       end
     end
