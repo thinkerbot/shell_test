@@ -9,10 +9,10 @@ module ShellTest
         # block. Run ensures the PTY process is killed upon errors, and but
         # re-raises the error for additional handling.  Lastly, run sets the
         # command status to $? upon completion.
-        def run(cmd) # :yields: agent
+        def run(cmd, attrs={}) # :yields: agent
           PTY.spawn(cmd) do |slave, master, pid|
             begin
-              return yield(new(master, slave))
+              return yield(new(master, slave, attrs))
             rescue
               Process.kill(9, pid)
               raise
@@ -47,7 +47,7 @@ module ShellTest
       def initialize(master, slave, attrs={})
         @master = master
         @slave  = slave
-        @timer  = CountdownTimer.new
+        @timer  = attrs[:timer] || CountdownTimer.new
         @partial_len = attrs[:partial_len] || 1
       end
 

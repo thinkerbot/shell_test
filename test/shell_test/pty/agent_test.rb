@@ -28,8 +28,18 @@ class AgentTest < Test::Unit::TestCase
   end
 
   def test_run_returns_block_output
-    result = Agent.run('/bin/sh') {|agent| agent.write("exit\n"); :result }
+    result = Agent.run('/bin/sh') do |agent|
+      agent.close
+      :result 
+    end
     assert_equal :result, result
+  end
+
+  def test_run_allows_specification_of_agent_attrs
+    Agent.run('/bin/sh', :partial_len => 100) do |agent|
+      agent.close
+      assert_equal 100, agent.partial_len
+    end
   end
 
   #
