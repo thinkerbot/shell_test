@@ -52,19 +52,20 @@ module ShellTest
       end
 
       # Reads from the slave until the regexp is matched and returns the
-      # resulting string.  If a nil regexp is given then expect reads until the
-      # slave eof. A timeout may be given.
+      # resulting string.  If a nil regexp is given then expect reads until
+      # the slave eof.
       #
-      # If the slave doesn't produce the expected string within the timeout then
-      # expect raises a ReadError.  A ReadError will be also be raised if the
-      # slave eof is reached before the regexp matches.
+      # A timeout may be given. If the slave doesn't produce the expected
+      # string within the timeout then expect raises an UnsatisfiedError. An
+      # UnsatisfiedError will be also be raised if the slave eof is reached
+      # before the regexp matches.
       def expect(regexp, timeout=nil)
         timer.timeout = timeout
 
         buffer = ''
         while true
           if !IO.select([slave],nil,nil,timer.timeout)
-            raise ReadError.new("timeout", buffer)
+            raise UnsatisfiedError.new("timeout", buffer)
           end
 
           if regexp.nil? && slave.eof?
@@ -79,7 +80,7 @@ module ShellTest
           begin
             buffer << slave.readpartial(partial_len)
           rescue EOFError
-            raise ReadError.new($!.message, buffer)
+            raise UnsatisfiedError.new($!.message, buffer)
           end
 
           if regexp && buffer =~ regexp
@@ -89,7 +90,7 @@ module ShellTest
         buffer
       end
 
-      # Read to the end of the slave.  Raises a ReadError if the slave eof is
+      # Read to the end of the slave.  Raises a UnsatisfiedError if the slave eof is
       # not reached within the timeout.
       def read(timeout=nil)
         expect nil, timeout
@@ -110,7 +111,7 @@ module ShellTest
         end
       end
 
-      class ReadError < RuntimeError
+      class UnsatisfiedError < RuntimeError
         attr_reader :buffer
 
         def initialize(message, buffer)

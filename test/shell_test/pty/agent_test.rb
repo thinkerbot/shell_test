@@ -53,7 +53,7 @@ class AgentTest < Test::Unit::TestCase
 
   def test_expect_raises_error_if_regexp_is_not_matched_in_timeout
     agent.master << "abc"
-    err = assert_raises(Agent::ReadError) { agent.expect(/x/, 0.1) }
+    err = assert_raises(Agent::UnsatisfiedError) { agent.expect(/x/, 0.1) }
 
     assert_equal "timeout", err.message
     assert_equal "abc", err.buffer
@@ -68,7 +68,7 @@ class AgentTest < Test::Unit::TestCase
       agent.master << 'x'
     end
 
-    err = assert_raises(Agent::ReadError) do
+    err = assert_raises(Agent::UnsatisfiedError) do
       agent.expect(/x/, 0.3)
     end
 
@@ -92,7 +92,7 @@ class AgentTest < Test::Unit::TestCase
     agent.master << "abc"
     agent.master.close
 
-    err = assert_raises(Agent::ReadError) { agent.expect(/x/, 0.1) }
+    err = assert_raises(Agent::UnsatisfiedError) { agent.expect(/x/, 0.1) }
     assert_equal "end of file reached", err.message
     assert_equal "abc", err.buffer
   end
@@ -109,7 +109,7 @@ class AgentTest < Test::Unit::TestCase
 
   def test_read_raises_error_if_eof_is_not_reached_in_timeout
     agent.master << "abc"
-    err = assert_raises(Agent::ReadError) { agent.read(0.1) }
+    err = assert_raises(Agent::UnsatisfiedError) { agent.read(0.1) }
 
     assert_equal "timeout", err.message
     assert_equal "abc", err.buffer
