@@ -68,7 +68,8 @@ class AgentTest < Test::Unit::TestCase
 
   def test_expect_read_in_chunks_of_partial_len
     agent.master << "abcxyz"
-    assert_equal "abcxy", agent.expect(/x/, 0.1, 5)
+    agent.partial_len = 5
+    assert_equal "abcxy", agent.expect(/x/, 0.1)
   end
 
   def test_expect_reads_to_eof_for_nil_regexp

@@ -35,10 +35,20 @@ module ShellTest
       # `timer.timeout`.
       attr_accessor :timer
 
-      def initialize(master, slave)
+      # The length of each chunk read from slave by expect. A larger partial
+      # length may be specified to speed up expect when the regexp is intended
+      # to match strings at a point where the slave will run out of data, for
+      # example prompts where the pty waits for input.
+      #
+      # Note that used inappropriately this may result in more data being read
+      # from the slave than is necessary to match the regexp.
+      attr_accessor :partial_len
+
+      def initialize(master, slave, attrs={})
         @master = master
         @slave  = slave
         @timer  = CountdownTimer.new
+        @partial_len = attrs[:partial_len] || 1
       end
 
       # Reads from the slave until the regexp is matched and returns the
@@ -48,17 +58,7 @@ module ShellTest
       # If the slave doesn't produce the expected string within the timeout then
       # expect raises a ReadError.  A ReadError will be also be raised if the
       # slave eof is reached before the regexp matches.
-      #
-      # ==== Partial Length
-      #
-      # A larger partial length may be specified to speed up expect when the
-      # regexp is intended to match strings at a point where the slave will run
-      # out of data, for example prompts where the pty waits for input.
-      #
-      # Note that used inappropriately this may result in more data being read
-      # from the slave than is necessary to match the regexp.
-      #
-      def expect(regexp, timeout=nil, partial_len=1)
+      def expect(regexp, timeout=nil)
         timer.timeout = timeout
 
         buffer = ''
@@ -92,7 +92,7 @@ module ShellTest
       # Read to the end of the slave.  Raises a ReadError if the slave eof is
       # not reached within the timeout.
       def read(timeout=nil)
-        expect nil, timeout, 4096
+        expect nil, timeout
       end
 
       # Writes to the master.
