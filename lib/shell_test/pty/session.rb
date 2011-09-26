@@ -1,50 +1,78 @@
 require 'shell_test/pty/agent'
+require 'shell_test/pty/utils'
 require 'shell_test/pty/step_timer'
 
 module ShellTest
   module Pty
     class Session
-      attr_reader :cmd
-      attr_reader :steps
+      include Utils
 
-      def initialize(cmd)
-        @cmd = cmd
+      attr_reader :shell
+      attr_reader :steps
+      attr_reader :opts
+
+      def initialize(shell='/bin/sh', opts={})
+        @shell = shell
         @steps = []
+        @opts = {
+          :ps1 => '$ ', :ps2 => '> ',
+          :partial_len => 1024,
+          :clock => Time
+        }
       end
 
-      def on(prompt, input, timeout=nil, &callback)
-        steps << [prompt, input, timeout, callback]
+      def on(prompt, input, timeout=nil)
+        steps << [prompt, input, timeout]
         self
       end
 
-      def run(max_run_time=1)
-        Agent.run(cmd) do |agent|
-          agent.timer = StepTimer.new
-          agent.timer.start(max_run_time)
+      # Parses an input string into steps.
+      def parse(str)
+        
+      end
 
-          steps.each do |prompt, input, timeout, callback|
-            buffer = agent.expect(prompt, timeout)
+      def run(max_run_time=1)
+        timer = StepTimer.new(opts[:clock])
+        attrs = {
+          :timer => timer, 
+          :partial_len => opts[:partial_len]
+        }
+        env = {
+          'PS1' => opts[:ps1],
+          'PS2' => opts[:ps2]
+        }
+
+        with_env(env) do
+          spawn(shell) do |master, slave|
+            agent = Agent.new(master, slave, opts)
+            timer.start(max_run_time)
+
+            steps.each do |prompt, input, timeout|
+              buffer = agent.expect(prompt, timeout)
+
+              if block_given?
+                yield buffer
+              end
+
+              if input
+                agent.write(input)
+              end
+            end
 
             if block_given?
-              yield buffer
+              yield agent.read
             end
 
-            if callback
-              callback.call(buffer)
-            end
-
-            if input
-              agent.write(input)
-            end
+            agent.close
+            timer.stop
           end
-
-          if block_given?
-            buffer = agent.expect(nil)
-            yield buffer
-          end
-
-          agent.timer.stop
         end
+      end
+
+      def capture(max_run_time=1)
+        buffer = []
+        run(max_run_time) {|str| buffer << str }
+        buffer.join
       end
     end
   end

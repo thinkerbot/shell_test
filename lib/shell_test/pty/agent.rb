@@ -1,28 +1,8 @@
-require 'pty'
 require 'shell_test/pty/countdown_timer'
 
 module ShellTest
   module Pty
     class Agent
-      class << self
-        # Spawns a PTY session and yields an Agent for that session to the
-        # block. Run ensures the PTY process is killed upon errors, and but
-        # re-raises the error for additional handling.  Lastly, run sets the
-        # command status to $? upon completion.
-        def run(cmd, attrs={}) # :yields: agent
-          PTY.spawn(cmd) do |slave, master, pid|
-            begin
-              return yield(new(master, slave, attrs))
-            rescue
-              Process.kill(9, pid)
-              raise
-            ensure
-              Process.wait(pid)
-            end
-          end
-        end
-      end
-
       # The pty master
       attr_reader :master
 

@@ -17,32 +17,6 @@ class AgentTest < Test::Unit::TestCase
   end
 
   #
-  # run test
-  #
-
-  def test_run_sets_exit_status
-    Agent.run('/bin/sh') do |agent|
-      agent.write "exit 8\n"
-    end
-    assert_equal 8, $?.exitstatus
-  end
-
-  def test_run_returns_block_output
-    result = Agent.run('/bin/sh') do |agent|
-      agent.close
-      :result 
-    end
-    assert_equal :result, result
-  end
-
-  def test_run_allows_specification_of_agent_attrs
-    Agent.run('/bin/sh', :partial_len => 100) do |agent|
-      agent.close
-      assert_equal 100, agent.partial_len
-    end
-  end
-
-  #
   # expect test
   #
 
