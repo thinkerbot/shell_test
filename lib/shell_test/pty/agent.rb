@@ -45,7 +45,8 @@ module ShellTest
         buffer = ''
         while true
           if !IO.select([slave],nil,nil,timer.timeout)
-            raise UnsatisfiedError.new("timeout", buffer)
+            msg = "timeout waiting for #{regexp ? regexp.inspect : 'EOF'}"
+            raise UnsatisfiedError.new(msg, buffer)
           end
 
           if regexp.nil? && slave.eof?
