@@ -33,17 +33,17 @@ module ShellTest
 
         with_env(env) do
           spawn(shell) do |master, slave|
-            agent = Agent.new(master, slave, :timer => timer, :partial_len => 1024)
+            agent = Agent.new(master, slave, :timer => timer)
             timer.start(opts[:max_run_time])
 
             unless opts[:crlf]
-              agent.expect(/#{Regexp.escape(env['PS1'])}/)
+              agent.expect(/#{Regexp.escape(env['PS1'])}/, 1, 1)
               agent.write "stty -onlcr\n"
-              agent.expect(/\n/)
+              agent.expect(/\n/, 1, 1)
             end
 
             steps.each do |prompt, input, timeout|
-              buffer = agent.expect(prompt, timeout)
+              buffer = agent.expect(prompt, timeout, 1024)
 
               if block_given?
                 yield buffer
