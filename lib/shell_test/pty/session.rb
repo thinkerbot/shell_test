@@ -28,13 +28,19 @@ module ShellTest
       end
 
       def run(opts={})
-        opts = {:clock => Time, :max_run_time => 5}
+        opts = {:clock => Time, :max_run_time => 1}.merge(opts)
         timer = StepTimer.new(opts[:clock])
 
         with_env(env) do
           spawn(shell) do |master, slave|
             agent = Agent.new(master, slave, :timer => timer, :partial_len => 1024)
             timer.start(opts[:max_run_time])
+
+            unless opts[:crlf]
+              agent.expect(/#{Regexp.escape(env['PS1'])}/)
+              agent.write "stty -onlcr\n"
+              agent.expect(/\n/)
+            end
 
             steps.each do |prompt, input, timeout|
               buffer = agent.expect(prompt, timeout)
