@@ -37,9 +37,11 @@ module ShellTest
             timer.start(opts[:max_run_time])
 
             unless opts[:crlf]
-              agent.expect(/#{Regexp.escape(env['PS1'])}/, 1, 1)
+              # Use a partial_len > 1 as a minor optimization.  There is no
+              # need to be precise (ultimately it's for readpartial).
+              agent.expect(/#{Regexp.escape(env['PS1'])}/, 1, 32)
               agent.write "stty -onlcr\n"
-              agent.expect(/\n/, 1, 1)
+              agent.expect(/\n/, 1, 32)
             end
 
             steps.each do |prompt, input, timeout|
