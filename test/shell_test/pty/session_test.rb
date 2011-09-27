@@ -12,6 +12,19 @@ class SessionTest < Test::Unit::TestCase
   end
 
   #
+  # parse test
+  #
+
+  def test_parse_splits_input_into_steps_along_ps1_and_ps2
+    session.parse "$ echo ab\\\n> c\nabc\n$ exit\nexit\n"
+    assert_equal [
+      [session.ps1r, "echo ab\\\n"],
+      [session.ps2r, "c\n"],
+      [session.ps1r, "exit\n"]
+    ], session.steps.map {|step| step[0,2] }
+  end
+
+  #
   # capture test
   #
 
