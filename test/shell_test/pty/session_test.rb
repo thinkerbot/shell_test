@@ -38,4 +38,15 @@ class SessionTest < Test::Unit::TestCase
     assert_equal "$ echo ab\\\n> c\nabc\n$ exit\nexit\n", session.capture
     assert_equal 0, $?.exitstatus
   end
+
+  def test_capture_with_different_ps1_and_ps2
+    session.env['PS1'] = '% '
+    session.env['PS2'] = ': '
+    session.on(/\% /, "echo ab\\\n")
+    session.on(/\: /, "c\n")
+    session.on(/\% /, "exit\n")
+
+    assert_equal "% echo ab\\\n: c\nabc\n% exit\nexit\n", session.capture
+    assert_equal 0, $?.exitstatus
+  end
 end
