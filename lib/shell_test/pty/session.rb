@@ -24,22 +24,50 @@ module ShellTest
       end
 
       # Parses an input string into steps.
-      def parse(str)
+      def parse(str, inline_regexp = /{{(.*?)}}/)
         scanner = StringScanner.new(str)
-        promptr  = /(?:\A|^)(#{Regexp.escape(env['PS1'])}|#{Regexp.escape(env['PS2'])})/
+        promptr = /(#{ps1rs}|#{ps2rs}|#{inline_regexp})/
+
         while expected = scanner.scan_until(promptr)
-          prompt = scanner[1] == env['PS1'] ? ps1r : ps2r
-          cmd = scanner.scan_until(/\n/)
-          on(prompt, cmd) {|actual| }
+          match = scanner[1]
+
+          case match
+          when env['PS1']
+            prompt = ps1r
+            input  = scanner.scan_until(/\n/)
+          when env['PS2']
+            prompt = ps2r
+            input  = scanner.scan_until(/\n/)
+          else
+            expected = expected.chomp(match)
+            start    = expected.rindex("\n") || 0
+            length   = expected.length - start
+            prompt   = /^#{expected[start, length]}\z/
+            input    = scanner[2].to_s + scanner.scan_until(/\n/)
+          end
+
+          if block_given?
+            on(prompt, input) {|actual| yield expected, actual }
+          else
+            on(prompt, input)
+          end
         end
       end
 
+      def ps1rs
+        "^#{Regexp.escape(env['PS1'])}"
+      end
+
+      def ps2rs
+        "^#{Regexp.escape(env['PS2'])}"
+      end
+
       def ps1r
-        /#{Regexp.escape(env['PS1'])}/
+        /#{ps1rs}/
       end
 
       def ps2r
-        /#{Regexp.escape(env['PS2'])}/
+        /#{ps2rs}/
       end
 
       def run(opts={})

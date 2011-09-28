@@ -24,6 +24,24 @@ class SessionTest < Test::Unit::TestCase
     ], session.steps.map {|step| step[0,2] }
   end
 
+  def test_parse_splits_input_at_mustache
+    session.parse "$ sudo echo abc\nPassword: {{secret}}\nabc\n$ exit\nexit\n"
+    assert_equal [
+      [session.ps1r, "sudo echo abc\n"],
+      [/^Password: \z/, "secret\n"],
+      [session.ps1r, "exit\n"]
+    ], session.steps.map {|step| step[0,2] }
+  end
+
+  def test_parse_allows_specification_of_alternate_inline_regexp
+    session.parse "$ sudo echo abc\nPassword: % secret\nabc\n$ exit\nexit\n", /% /
+    assert_equal [
+      [session.ps1r, "sudo echo abc\n"],
+      [/^Password: \z/, "secret\n"],
+      [session.ps1r, "exit\n"]
+    ], session.steps.map {|step| step[0,2] }
+  end
+
   #
   # capture test
   #
