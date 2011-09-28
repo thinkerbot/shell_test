@@ -18,28 +18,42 @@ class SessionTest < Test::Unit::TestCase
   def test_parse_splits_input_into_steps_along_ps1_and_ps2
     session.parse "$ echo ab\\\n> c\nabc\n$ exit\nexit\n"
     assert_equal [
-      [session.ps1r, "echo ab\\\n"],
-      [session.ps2r, "c\n"],
-      [session.ps1r, "exit\n"]
-    ], session.steps.map {|step| step[0,2] }
+      [session.ps1r, "echo ab\\\n", nil],
+      [session.ps2r, "c\n", nil],
+      [session.ps1r, "exit\n", -1],
+      [nil, nil, nil]
+    ], session.steps.map {|step| step[0,3] }
   end
 
   def test_parse_splits_input_at_mustache
     session.parse "$ sudo echo abc\nPassword: {{secret}}\nabc\n$ exit\nexit\n"
     assert_equal [
-      [session.ps1r, "sudo echo abc\n"],
-      [/^Password: \z/, "secret\n"],
-      [session.ps1r, "exit\n"]
-    ], session.steps.map {|step| step[0,2] }
+      [session.ps1r, "sudo echo abc\n", nil],
+      [/^Password: \z/, "secret\n", nil],
+      [session.ps1r, "exit\n", -1],
+      [nil, nil, nil]
+    ], session.steps.map {|step| step[0,3] }
   end
 
   def test_parse_allows_specification_of_alternate_inline_regexp
     session.parse "$ sudo echo abc\nPassword: % secret\nabc\n$ exit\nexit\n", /% /
     assert_equal [
-      [session.ps1r, "sudo echo abc\n"],
-      [/^Password: \z/, "secret\n"],
-      [session.ps1r, "exit\n"]
-    ], session.steps.map {|step| step[0,2] }
+      [session.ps1r, "sudo echo abc\n", nil],
+      [/^Password: \z/, "secret\n", nil],
+      [session.ps1r, "exit\n", -1],
+      [nil, nil, nil]
+    ], session.steps.map {|step| step[0,3] }
+  end
+
+  def test_parse_allows_specification_of_a_timeout_per_input
+    session.parse "$ if true # [1]\n> then echo abc  # [2.2]\n> fi\n$ exit# [0.1]\nexit\n"
+    assert_equal [
+      [session.ps1r, "if true \n", nil],
+      [session.ps2r, "then echo abc  \n", 1],
+      [session.ps2r, "fi\n", 2.2],
+      [session.ps1r, "exit\n", -1],
+      [nil, nil, 0.1]
+    ], session.steps.map {|step| step[0,3] }
   end
 
   #

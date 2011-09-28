@@ -15,11 +15,14 @@ module ShellTest
       def initialize(shell='/bin/sh', env={})
         @shell = shell
         @env = {'PS1' => '$ ', 'PS2' => '> '}.merge(env)
-        @steps = []
+        @steps = [[nil, nil, nil]]
       end
 
-      def on(prompt, input, timeout=nil, &callback)
-        steps << [prompt, input, timeout, callback]
+      def on(prompt, input, timeout=nil)
+        last = steps.last
+        last[0] = prompt
+        last[1] = input
+        steps << [nil, nil, timeout]
         self
       end
 
@@ -30,26 +33,33 @@ module ShellTest
 
         while expected = scanner.scan_until(promptr)
           match = scanner[1]
+          input = scanner[2].to_s + scanner.scan_until(/\n/)
+
+          timeout = -1
+          input.sub!(/\#\s*\[(\d+(?:\.\d+)?)\]/) do
+            timeout = $1.to_f
+            nil
+          end
 
           case match
           when env['PS1']
-            prompt = ps1r
-            input  = scanner.scan_until(/\n/)
+            prompt  = ps1r
+            if timeout == -1
+              timeout = nil
+            end
           when env['PS2']
-            prompt = ps2r
-            input  = scanner.scan_until(/\n/)
+            prompt  = ps2r
           else
             expected = expected.chomp(match)
             start    = expected.rindex("\n") || 0
             length   = expected.length - start
             prompt   = /^#{expected[start, length]}\z/
-            input    = scanner[2].to_s + scanner.scan_until(/\n/)
           end
 
           if block_given?
-            on(prompt, input) {|actual| yield expected, actual }
+            on(prompt, input, timeout) {|actual| yield expected, actual }
           else
-            on(prompt, input)
+            on(prompt, input, timeout)
           end
         end
       end
@@ -101,10 +111,6 @@ module ShellTest
               if input
                 agent.write(input)
               end
-            end
-
-            if block_given?
-              yield agent.read
             end
 
             agent.close
