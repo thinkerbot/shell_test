@@ -18,42 +18,42 @@ class SessionTest < Test::Unit::TestCase
   def test_parse_splits_input_into_steps_along_ps1_and_ps2
     session.parse "$ echo ab\\\n> c\nabc\n$ exit\nexit\n"
     assert_equal [
-      [session.ps1r, "echo ab\\\n", nil],
-      [session.ps2r, "c\n", nil],
-      [session.ps1r, "exit\n", -1],
-      [nil, nil, nil]
-    ], session.steps.map {|step| step[0,3] }
+      [session.ps1r, "echo ab\\\n", nil, nil],
+      [session.ps2r, "c\n", nil, nil],
+      [session.ps1r, "exit\n", -1, nil],
+      [nil, nil, nil, nil]
+    ], session.steps
   end
 
   def test_parse_splits_input_at_mustache
     session.parse "$ sudo echo abc\nPassword: {{secret}}\nabc\n$ exit\nexit\n"
     assert_equal [
-      [session.ps1r, "sudo echo abc\n", nil],
-      [/^Password: \z/, "secret\n", nil],
-      [session.ps1r, "exit\n", -1],
-      [nil, nil, nil]
-    ], session.steps.map {|step| step[0,3] }
+      [session.ps1r, "sudo echo abc\n", nil, nil],
+      [/^Password: \z/, "secret\n", nil, nil],
+      [session.ps1r, "exit\n", -1, nil],
+      [nil, nil, nil, nil]
+    ], session.steps
   end
 
   def test_parse_allows_specification_of_alternate_inline_regexp
     session.parse "$ sudo echo abc\nPassword: % secret\nabc\n$ exit\nexit\n", /% /
     assert_equal [
-      [session.ps1r, "sudo echo abc\n", nil],
-      [/^Password: \z/, "secret\n", nil],
-      [session.ps1r, "exit\n", -1],
-      [nil, nil, nil]
-    ], session.steps.map {|step| step[0,3] }
+      [session.ps1r, "sudo echo abc\n", nil, nil],
+      [/^Password: \z/, "secret\n", nil, nil],
+      [session.ps1r, "exit\n", -1, nil],
+      [nil, nil, nil, nil]
+    ], session.steps
   end
 
-  def test_parse_allows_specification_of_a_timeout_per_input
+  def test_parse_allows_specification_of_a_max_run_time_per_input
     session.parse "$ if true # [1]\n> then echo abc  # [2.2]\n> fi\n$ exit# [0.1]\nexit\n"
     assert_equal [
-      [session.ps1r, "if true \n", nil],
-      [session.ps2r, "then echo abc  \n", 1],
-      [session.ps2r, "fi\n", 2.2],
-      [session.ps1r, "exit\n", -1],
-      [nil, nil, 0.1]
-    ], session.steps.map {|step| step[0,3] }
+      [session.ps1r, "if true \n", nil, nil],
+      [session.ps2r, "then echo abc  \n", 1, nil],
+      [session.ps2r, "fi\n", 2.2, nil],
+      [session.ps1r, "exit\n", -1, nil],
+      [nil, nil, 0.1, nil]
+    ], session.steps
   end
 
   #

@@ -15,14 +15,15 @@ module ShellTest
       def initialize(shell='/bin/sh', env={})
         @shell = shell
         @env = {'PS1' => '$ ', 'PS2' => '> '}.merge(env)
-        @steps = [[nil, nil, nil]]
+        @steps = [[nil, nil, nil, nil]]
       end
 
-      def on(prompt, input, timeout=nil)
+      def on(prompt, input, max_run_time=nil, &callback)
         last = steps.last
         last[0] = prompt
         last[1] = input
-        steps << [nil, nil, timeout]
+        last[3] = callback
+        steps << [nil, nil, max_run_time, nil]
         self
       end
 
@@ -35,17 +36,17 @@ module ShellTest
           match = scanner[1]
           input = scanner[2].to_s + scanner.scan_until(/\n/)
 
-          timeout = -1
+          max_run_time = -1
           input.sub!(/\#\s*\[(\d+(?:\.\d+)?)\]/) do
-            timeout = $1.to_f
+            max_run_time = $1.to_f
             nil
           end
 
           case match
           when env['PS1']
             prompt  = ps1r
-            if timeout == -1
-              timeout = nil
+            if max_run_time == -1
+              max_run_time = nil
             end
           when env['PS2']
             prompt  = ps2r
@@ -57,9 +58,9 @@ module ShellTest
           end
 
           if block_given?
-            on(prompt, input, timeout) {|actual| yield expected, actual }
+            on(prompt, input, max_run_time) {|actual| yield expected, actual }
           else
-            on(prompt, input, timeout)
+            on(prompt, input, max_run_time)
           end
         end
       end
