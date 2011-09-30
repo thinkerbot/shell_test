@@ -12,7 +12,7 @@ module ShellTest
         PTY.spawn(cmd) do |slave, master, pid|
           begin
             return yield(master, slave)
-          rescue
+          rescue Exception
             Process.kill(9, pid)
             raise
           ensure
