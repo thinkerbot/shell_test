@@ -1,20 +1,51 @@
 require 'shell_test/shell_methods/agent'
+require 'shell_test/shell_methods/parser'
 require 'shell_test/shell_methods/utils'
-require 'strscan'
 
 module ShellTest
   module ShellMethods
     class Session
+      class << self
+        def run(shell, script, options={})
+          session = new(shell, options)
+
+          last_input = ''
+          session.parse(script).each do |output, input, prompt, max_run_time|
+            session.on(prompt, input, max_run_time) do |actual|
+
+              # clean unless raw output is desired
+              # unless raw
+              #   output = parser.strip(output, input, prompt)
+              #   actual = parser.strip(actual, input, prompt)
+              # end
+
+              yield(last_input + output, actual, input)
+              last_input = input
+            end
+          end
+          session.steps.pop
+          session.close
+          session.steps.pop
+          session.run(options)
+        end
+      end
+
       include Utils
 
       attr_reader :shell
       attr_reader :env
+      attr_reader :parser
       attr_reader :steps
 
       def initialize(shell='/bin/sh', env={})
         @shell = shell
         @env = {'PS1' => '$ ', 'PS2' => '> '}.merge(env)
+        @parser = Parser.new(env)
         @steps = [[nil, nil, nil, nil]]
+      end
+
+      def ssteps
+        steps.collect {|s| s[0,3]}
       end
 
       def on(prompt, input, max_run_time=nil, &callback)
@@ -26,58 +57,19 @@ module ShellTest
         self
       end
 
-      # Parses an input string into steps.
-      def parse(str, inline_regexp = /{{(.*?)}}/)
-        scanner = StringScanner.new(str)
-        promptr = /(#{ps1rs}|#{ps2rs}|#{inline_regexp})/
+      def parse(script)
+        parser.parse(script)
+      end
 
-        while expected = scanner.scan_until(promptr)
-          match = scanner[1]
-          input = scanner[2].to_s + scanner.scan_until(/\n/)
-
-          max_run_time = -1
-          input.sub!(/\#\s*\[(\d+(?:\.\d+)?)\]/) do
-            max_run_time = $1.to_f
-            nil
-          end
-
-          case match
-          when env['PS1']
-            prompt  = ps1r
-            if max_run_time == -1
-              max_run_time = nil
-            end
-          when env['PS2']
-            prompt  = ps2r
-          else
-            expected = expected.chomp(match)
-            start    = expected.rindex("\n") || 0
-            length   = expected.length - start
-            prompt   = /^#{expected[start, length]}\z/
-          end
-
-          if block_given?
-            on(prompt, input, max_run_time) {|actual| yield expected, actual }
-          else
-            on(prompt, input, max_run_time)
-          end
+      def close
+        unless closed?
+          on(parser.ps1r, "exit $?\n")
         end
       end
 
-      def ps1rs
-        "^#{Regexp.escape(env['PS1'])}"
-      end
-
-      def ps2rs
-        "^#{Regexp.escape(env['PS2'])}"
-      end
-
-      def ps1r
-        /#{ps1rs}/
-      end
-
-      def ps2r
-        /#{ps2rs}/
+      def closed?
+        close_step = steps[-2]
+        close_step && close_step[1] =~ /\Aexit (\d+|\$\?)\z/ ? true : false
       end
 
       def run(opts={})
@@ -92,7 +84,7 @@ module ShellTest
             unless opts[:crlf]
               # Use a partial_len > 1 as a minor optimization.  There is no
               # need to be precise (ultimately it's for readpartial).
-              agent.expect(ps1r, 1, 32)
+              agent.expect(parser.ps1r, 1, 32)
               agent.write "stty -onlcr\n"
               agent.expect(/\n/, 1, 32)
             end

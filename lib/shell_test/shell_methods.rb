@@ -1,6 +1,6 @@
 require 'shell_test/regexp_escape'
-require 'shell_test/command_parser'
 require 'shell_test/string_methods'
+require 'shell_test/shell_methods/session'
 
 module ShellTest
   module ShellMethods
@@ -11,55 +11,11 @@ module ShellTest
       @notify_method_name = true
     end
 
-    # Parse a script into an array of [cmd, output, status] triplets.
-    def parse_script(script, options={})
-      CommandParser.new(options).parse(script)
-    end
-
     # Returns true if the ENV variable 'VERBOSE' is true.  When verbose,
     # ShellTest prints the expanded commands of sh_test to $stdout.
     def verbose?
       verbose = ENV['VERBOSE']
       verbose && verbose =~ /^true$/i ? true : false
-    end
-
-    # Sets the specified ENV variables and returns the *current* env.
-    # If replace is true, current ENV variables are replaced; otherwise
-    # the new env variables are simply added to the existing set.
-    def set_env(env={}, replace=false)
-      current_env = {}
-      ENV.each_pair do |key, value|
-        current_env[key] = value
-      end
-
-      ENV.clear if replace
-
-      env.each_pair do |key, value|
-        if value.nil?
-          ENV.delete(key)
-        else
-          ENV[key] = value
-        end
-      end if env
-
-      current_env
-    end
-
-    # Sets the specified ENV variables for the duration of the block.
-    # If replace is true, current ENV variables are replaced; otherwise
-    # the new env variables are simply added to the existing set.
-    #
-    # Returns the block return.
-    def with_env(env={}, replace=false)
-      current_env = nil
-      begin
-        current_env = set_env(env, replace)
-        yield
-      ensure
-        if current_env
-          set_env(current_env, true)
-        end
-      end
     end
 
     def sh(cmd)
@@ -86,11 +42,11 @@ module ShellTest
     end
 
     def _assert_script(script, options={})
-      parse_script(script, options).each do |cmd, output, status|
-        result = sh(cmd)
-
-        _assert_str_equal(output, result, cmd) if output
-        assert_equal(status, $?.exitstatus, cmd)  if status
+      Session.run("/bin/sh", script, options) do |expected, actual, cmd|
+        _assert_str_equal expected, actual, cmd
+      end
+      if status = options[:status]
+        assert_equal(status, $?.exitstatus)
       end
     end
 
@@ -99,11 +55,11 @@ module ShellTest
     end
 
     def _assert_script_match(script, options={})
-      parse_script(script, options).each do |cmd, output, status|
-        result = sh(cmd)
-
-        _assert_str_match(output, result, cmd)       if output
-        assert_equal(status, $?.exitstatus, cmd) if status
+      Session.run("/bin/sh", script, options) do |expected, actual, cmd|
+        _assert_script_match expected, actual, cmd
+      end
+      if status = options[:status]
+        assert_equal(status, $?.exitstatus)
       end
     end
   end
