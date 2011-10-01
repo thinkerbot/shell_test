@@ -1,10 +1,9 @@
-require 'shell_test/pty/agent'
-require 'shell_test/pty/utils'
-require 'shell_test/pty/step_timer'
+require 'shell_test/shell_methods/agent'
+require 'shell_test/shell_methods/utils'
 require 'strscan'
 
 module ShellTest
-  module Pty
+  module ShellMethods
     class Session
       include Utils
 
@@ -83,7 +82,7 @@ module ShellTest
 
       def run(opts={})
         opts = {:clock => Time, :max_run_time => 1}.merge(opts)
-        timer = StepTimer.new(opts[:clock])
+        timer = Timer.new(opts[:clock])
 
         with_env(env) do
           spawn(shell) do |master, slave|

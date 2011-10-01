@@ -1,7 +1,7 @@
-require 'shell_test/pty/countdown_timer'
+require 'shell_test/shell_methods/timer'
 
 module ShellTest
-  module Pty
+  module ShellMethods
     class Agent
       # The pty master
       attr_reader :master
@@ -18,7 +18,7 @@ module ShellTest
       def initialize(master, slave, attrs={})
         @master = master
         @slave  = slave
-        @timer  = attrs[:timer] || CountdownTimer.new
+        @timer  = attrs[:timer] || Timer.new
       end
 
       # Reads from the slave until the regexp is matched and returns the

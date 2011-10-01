@@ -1,8 +1,8 @@
 require File.expand_path("../../../test_helper", __FILE__)
-require "shell_test/pty/utils"
+require "shell_test/shell_methods/utils"
 
 class UtilsTest < Test::Unit::TestCase
-  include ShellTest::Pty::Utils
+  include ShellTest::ShellMethods::Utils
 
   #
   # spawn test

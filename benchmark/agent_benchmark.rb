@@ -1,5 +1,5 @@
-require 'shell_test/pty/agent'
-require 'shell_test/pty/utils'
+require 'shell_test/shell_methods/agent'
+require 'shell_test/shell_methods/utils'
 require 'benchmark'
 
 def run_cmd
@@ -7,8 +7,8 @@ def run_cmd
 end
 
 def run_agent(partial_len)
-  ShellTest::Pty::Utils.spawn(run_cmd) do |master, slave|
-    agent = ShellTest::Pty::Agent.new(master, slave, :partial_len => partial_len)
+  ShellTest::ShellMethods::Utils.spawn(run_cmd) do |master, slave|
+    agent = ShellTest::ShellMethods::Agent.new(master, slave, :partial_len => partial_len)
     agent.expect(/\?/, nil)
     agent.close
   end

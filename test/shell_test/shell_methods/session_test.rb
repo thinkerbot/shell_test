@@ -1,8 +1,8 @@
 require File.expand_path("../../../test_helper", __FILE__)
-require "shell_test/pty/session"
+require "shell_test/shell_methods/session"
 
 class SessionTest < Test::Unit::TestCase
-  Session = ShellTest::Pty::Session
+  Session = ShellTest::ShellMethods::Session
 
   attr_accessor :session
 

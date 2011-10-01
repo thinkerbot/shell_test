@@ -1,7 +1,7 @@
 require 'pty'
 
 module ShellTest
-  module Pty
+  module ShellMethods
     module Utils
       module_function
 

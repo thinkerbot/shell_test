@@ -1,6 +1,6 @@
 module ShellTest
-  module Pty
-    class StepTimer
+  module ShellMethods
+    class Timer
       attr_reader :clock
       attr_reader :start_time
       attr_reader :stop_time
