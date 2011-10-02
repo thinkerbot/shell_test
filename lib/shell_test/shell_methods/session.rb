@@ -1,3 +1,4 @@
+require 'shell_test/env_methods'
 require 'shell_test/shell_methods/agent'
 require 'shell_test/shell_methods/utils'
 require 'strscan'
@@ -13,6 +14,7 @@ module ShellTest
         end
       end
 
+      include EnvMethods
       include Utils
 
       attr_reader :shell

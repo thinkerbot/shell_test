@@ -5,7 +5,7 @@ require 'shell_test/shell_methods/session'
 module ShellTest
   module ShellMethods
     include StringMethods
-    include Utils
+    include EnvMethods
 
     def setup
       super
