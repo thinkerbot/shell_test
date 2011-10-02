@@ -96,6 +96,14 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_for_long_commands_and_output
+    str = "abcdefgh" * 20
+    assert_script %{
+      $ echo #{str}
+      #{str}
+    }
+  end
+
   def test_assert_script_fails_on_mismatch
     assert_raises(TestUnitErrorClass) { assert_script %Q{printf ""\nflunk} }
     assert_raises(TestUnitErrorClass) { assert_script %Q{echo pass\nflunk} }

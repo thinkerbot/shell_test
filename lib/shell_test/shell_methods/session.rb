@@ -6,14 +6,6 @@ require 'strscan'
 module ShellTest
   module ShellMethods
     class Session
-      class << self
-        def run(shell, script, options={}, &block)
-          session = new(shell, options)
-          session.parse(script, &block)
-          session.run(options)
-        end
-      end
-
       include EnvMethods
       include Utils
 
@@ -25,10 +17,15 @@ module ShellTest
       attr_reader :ps2
       attr_reader :ps1r
       attr_reader :ps2r
+      attr_reader :stty
 
-      def initialize(shell='/bin/sh', env={})
-        @shell = shell
-        @env = {'PS1' => '$ ', 'PS2' => '> '}.merge(env)
+      def initialize(options={})
+        @shell = options[:shell] || '/bin/sh'
+        @env   = options[:env] || {}
+        @env['PS1'] ||= '$ '
+        @env['PS2'] ||= '> '
+        @stty  = options[:stty] || nil
+
         @ps1 = @env['PS1']
         @ps1r = /#{Regexp.escape(@ps1)}/
         @ps2 = @env['PS2']
@@ -123,8 +120,9 @@ module ShellTest
             #   output = parser.strip(output, input, prompt)
             #   actual = parser.strip(actual, input, prompt)
             # end
+            # puts last_input.scan(/.{0,80}/).inspect
 
-            yield("#{last_input}#{output}", actual, input)
+            yield(output, actual, input)
             last_input = input
           end
         end
@@ -139,11 +137,11 @@ module ShellTest
             agent = Agent.new(master, slave, :timer => timer)
             timer.start(opts[:max_run_time])
 
-            unless opts[:crlf]
+            if stty
               # Use a partial_len > 1 as a minor optimization.  There is no
               # need to be precise (ultimately it's for readpartial).
               agent.expect(@ps1r, 1, 32)
-              agent.write "stty -onlcr\n"
+              agent.write "stty #{stty}\n"
               agent.expect(/\n/, 1, 32)
             end
 

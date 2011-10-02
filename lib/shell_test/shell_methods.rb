@@ -38,14 +38,26 @@ module ShellTest
       result
     end
 
+    def session_test(shell, script, options={})
+      
+      session.parse(script) do |expected, actual, cmd|
+        
+      end
+      session.run(options)
+    end
+
     def assert_script(script, options={})
       _assert_script outdent(script), options
     end
 
     def _assert_script(script, options={})
-      Session.run("/bin/sh", script, options[:env] || {}) do |expected, actual, cmd|
+      options = {:stty => 'raw'}.merge(options)
+      session = Session.new(options)
+      session.parse(script) do |expected, actual, cmd|
         _assert_str_equal expected, actual, cmd
       end
+      session.run
+
       if status = options[:exitstatus]
         assert_equal(status, $?.exitstatus)
       end
@@ -56,9 +68,13 @@ module ShellTest
     end
 
     def _assert_script_match(script, options={})
-      Session.run("/bin/sh", script, options[:env] || {}) do |expected, actual, cmd|
+      options = {:stty => 'raw'}.merge(options)
+      session = Session.new(options)
+      session.parse(script) do |expected, actual, cmd|
         _assert_str_match expected, actual, cmd
       end
+      session.run
+
       if status = options[:exitstatus]
         assert_equal(status, $?.exitstatus)
       end
