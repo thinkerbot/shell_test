@@ -55,7 +55,7 @@ output/status checking, or specify a different exit status to expect.
         }
       end
     end
-    
+  
     def test_multiple_commands
       assert_script %{
         $ echo one
@@ -74,20 +74,13 @@ output/status checking, or specify a different exit status to expect.
         two
       }
     end
- 
-    def test_exit_statuses
+  
+    def test_exit_status
       assert_script %{
-        $ true  # [0]
-        $ false # [1]
-      }
+        $ false
+      }, :exitstatus => 1
     end
-    
-    def test_exit_status_and_not_ouptut
-      assert_script %{
-        $ date  # [0] ...
-      }
-    end
-    
+  
     def test_output_with_inline_regexps
       assert_script_match %{
         $ cal

@@ -67,17 +67,10 @@ class ReadmeTest < Test::Unit::TestCase
             }
           end
 
-          def test_exit_statuses
+          def test_exit_status
             assert_script %{
-              $ true  # [0]
-              $ false # [1]
-            }
-          end
-
-          def test_exit_status_and_not_ouptut
-            assert_script %{
-              $ date  # [0] ...
-            }
+              $ false
+            }, :exitstatus => 1
           end
 
           def test_output_with_inline_regexps
