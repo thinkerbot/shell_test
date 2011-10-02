@@ -51,6 +51,12 @@ module ShellTest
       end
     end
 
+    def indent(str, indent='  ')
+      str.split("\n").collect do |frag|
+        "#{indent}#{frag}"
+      end.join("\n")
+    end
+
     # helper for stripping indentation off a string
     def outdent(str)
       str =~ /\A(?:\s*?\n)( *)(.*)\z/m ? $2.gsub!(/^ {0,#{$1.length}}/, '') : str

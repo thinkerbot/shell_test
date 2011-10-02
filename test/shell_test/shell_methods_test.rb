@@ -40,8 +40,7 @@ class ShellMethodsTest < Test::Unit::TestCase
     assert_script %{
       $ printf "\\t\\n  "
       \t
-        
-    }
+        }
   end
 
   def test_assert_script_strips_indents

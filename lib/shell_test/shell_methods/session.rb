@@ -1,29 +1,14 @@
 require 'shell_test/shell_methods/agent'
-require 'shell_test/shell_methods/parser'
 require 'shell_test/shell_methods/utils'
+require 'strscan'
 
 module ShellTest
   module ShellMethods
     class Session
       class << self
-        def run(shell, script, options={})
+        def run(shell, script, options={}, &block)
           session = new(shell, options)
-
-          last_input = ''
-          session.parse(script).each do |output, input, prompt, max_run_time|
-            session.on(prompt, input, max_run_time) do |actual|
-
-              # clean unless raw output is desired
-              # unless raw
-              #   output = parser.strip(output, input, prompt)
-              #   actual = parser.strip(actual, input, prompt)
-              # end
-
-              yield("#{last_input}#{output}", actual, input)
-              last_input = input
-            end
-          end
-          session.close
+          session.parse(script, &block)
           session.run(options)
         end
       end
@@ -34,11 +19,19 @@ module ShellTest
       attr_reader :env
       attr_reader :parser
       attr_reader :steps
+      attr_reader :ps1
+      attr_reader :ps2
+      attr_reader :ps1r
+      attr_reader :ps2r
 
       def initialize(shell='/bin/sh', env={})
         @shell = shell
         @env = {'PS1' => '$ ', 'PS2' => '> '}.merge(env)
-        @parser = Parser.new(@env.dup)
+        @ps1 = @env['PS1']
+        @ps1r = /#{Regexp.escape(@ps1)}/
+        @ps2 = @env['PS2']
+        @ps2r = /#{Regexp.escape(@ps2)}/
+        @promptr = /(#{@ps1r}|#{@ps2r}|{{(.*?)}})/
         @steps = [[nil, nil, nil, nil]]
       end
 
@@ -64,19 +57,75 @@ module ShellTest
         self
       end
 
-      def parse(script)
-        parser.parse(script)
-      end
+      def split(str)
+        scanner = StringScanner.new(str)
+        scanner.scan(/\s+/)
 
-      def close
-        unless closed?
-          on parser.ps1r,  "exit $?\n"
+        steps   = []
+        last_max_run_time = nil
+        while output = scanner.scan_until(@promptr)
+          match = scanner[1]
+          input = scanner[2].to_s + scanner.scan_until(/\n/)
+
+          max_run_time = -1
+          input.sub!(/\#\s*\[(\d+(?:\.\d+)?)\].*$/) do
+            max_run_time = $1.to_f
+            nil
+          end
+
+          case match
+          when ps1
+            prompt = @ps1r
+            if max_run_time == -1
+              max_run_time = nil
+            end
+          when ps2
+            prompt = @ps2r
+          else
+            output = output.chomp(match)
+            start  = output.rindex("\n") || 0
+            length = output.length - start
+            prompt = /^#{output[start, length]}\z/
+          end
+
+          steps << [output, input, prompt, last_max_run_time]
+          last_max_run_time = max_run_time
         end
+
+        if steps.empty?
+          input  = scanner.scan(/.+?\n/)
+          output = scanner.rest
+          steps << [output + ps1, input, @ps1r, nil]
+        else
+          steps << [scanner.rest, nil, nil, last_max_run_time]
+        end
+
+        unless steps.length > 1 && steps[-2][1] =~ /^exit(?:$|\s)/
+          last_step     = steps[-1]
+          last_step[0] += ps1
+          last_step[1]  = "exit $?\n"
+          last_step[2]  = @ps1r
+          steps << ["exit\n", nil, nil, nil]
+        end
+
+        steps
       end
 
-      def closed?
-        next_to_last_input = steps[-2][1]
-        next_to_last_input && next_to_last_input =~ /^exit /
+      def parse(script)
+        last_input = ''
+        split(script).each do |output, input, prompt, max_run_time|
+          on(prompt, input, max_run_time) do |actual|
+
+            # clean unless raw output is desired
+            # unless raw
+            #   output = parser.strip(output, input, prompt)
+            #   actual = parser.strip(actual, input, prompt)
+            # end
+
+            yield("#{last_input}#{output}", actual, input)
+            last_input = input
+          end
+        end
       end
 
       def run(opts={})
@@ -91,7 +140,7 @@ module ShellTest
             unless opts[:crlf]
               # Use a partial_len > 1 as a minor optimization.  There is no
               # need to be precise (ultimately it's for readpartial).
-              agent.expect(parser.ps1r, 1, 32)
+              agent.expect(@ps1r, 1, 32)
               agent.write "stty -onlcr\n"
               agent.expect(/\n/, 1, 32)
             end

@@ -12,6 +12,51 @@ class SessionTest < Test::Unit::TestCase
   end
 
   #
+  # split test
+  #
+
+  def test_split_splits_input_into_steps_along_ps1_and_ps2
+    steps = session.split "$ echo ab\\\n> c\nabc\n$ exit\nexit\n"
+    assert_equal [
+      ["$ ", "echo ab\\\n", session.ps1r, nil],
+      ["> ", "c\n", session.ps2r, nil],
+      ["abc\n$ ", "exit\n", session.ps1r, -1],
+      ["exit\n", nil, nil, nil]
+    ], steps
+  end
+
+  def test_split_adds_exit_if_missing
+    steps = session.split "$ echo ab\\\n> c\nabc\n"
+    assert_equal [
+      ["$ ", "echo ab\\\n", session.ps1r, nil],
+      ["> ", "c\n", session.ps2r, nil],
+      ["abc\n$ ", "exit $?\n", session.ps1r, -1],
+      ["exit\n", nil, nil, nil]
+    ], steps
+  end
+
+  def test_split_splits_input_at_mustache
+    steps = session.split "$ sudo echo abc\nPassword: {{secret}}\nabc\n$ exit\nexit\n"
+    assert_equal [
+      ["$ ", "sudo echo abc\n", session.ps1r, nil],
+      ["Password: ", "secret\n", /^Password: \z/, nil],
+      ["abc\n$ ", "exit\n", session.ps1r, -1],
+      ["exit\n", nil, nil, nil]
+    ], steps
+  end
+
+  def test_split_allows_specification_of_a_max_run_time_per_input
+    steps = session.split "$ if true # [1]\n> then echo abc  # [2.2]\n> fi\nabc\n$ exit# [0.1]\nexit\n"
+    assert_equal [
+      ["$ ", "if true \n", session.ps1r, nil],
+      ["> ", "then echo abc  \n",  session.ps2r, 1],
+      ["> ", "fi\n",  session.ps2r, 2.2],
+      ["abc\n$ ", "exit\n", session.ps1r, -1],
+      ["exit\n", nil, nil, 0.1]
+    ], steps
+  end
+
+  #
   # capture test
   #
 

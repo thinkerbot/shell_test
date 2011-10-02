@@ -28,7 +28,7 @@ class ReadmeTest < Test::Unit::TestCase
     end
     
     result = sh "ruby -I'#{LIBDIR}' '#{script}'"
-    assert_equal 0, $?.exitstatus, result
+    assert_equal 0, $?.exitstatus, indent(result, '    ')
   end
   
   def test_shell_methods_example
@@ -93,7 +93,7 @@ class ReadmeTest < Test::Unit::TestCase
     end
     
     result = sh "ruby -I'#{LIBDIR}' '#{script}'"
-    assert_equal 0, $?.exitstatus, result
+    assert_equal 0, $?.exitstatus, indent(result, '    ')
   end
   
   def test_file_methods_example
@@ -113,6 +113,6 @@ class ReadmeTest < Test::Unit::TestCase
     end
 
     result = sh "ruby -I'#{LIBDIR}' '#{script}'"
-    assert_equal 0, $?.exitstatus, result
+    assert_equal 0, $?.exitstatus, indent(result, '    ')
   end
 end
