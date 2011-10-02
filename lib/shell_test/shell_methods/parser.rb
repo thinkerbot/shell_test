@@ -16,15 +16,16 @@ module ShellTest
         }.merge(opts)
 
         @ps1 = opts['PS1']
-        @ps1r = /^#{Regexp.escape(@ps1)}/
+        @ps1r = /#{Regexp.escape(@ps1)}/
         @ps2 = opts['PS2']
-        @ps2r = /^#{Regexp.escape(@ps2)}/
+        @ps2r = /#{Regexp.escape(@ps2)}/
         @promptr = /(#{@ps1r}|#{@ps2r}|{{(.*?)}})/
       end
 
       # Parses an input string into steps.
       def parse(str)
         scanner = StringScanner.new(str)
+        scanner.scan(/\s+/)
 
         steps   = []
         last_max_run_time = nil
@@ -57,7 +58,13 @@ module ShellTest
           last_max_run_time = max_run_time
         end
 
-        steps << [scanner.rest, nil, nil, last_max_run_time]
+        if steps.empty?
+          input  = scanner.scan(/.+?\n/)
+          output = scanner.rest
+          steps << [output + ps1, input, ps1r, nil]
+        else
+          steps << [scanner.rest, nil, nil, last_max_run_time]
+        end
         steps
       end
     end

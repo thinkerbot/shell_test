@@ -19,13 +19,11 @@ module ShellTest
               #   actual = parser.strip(actual, input, prompt)
               # end
 
-              yield(last_input + output, actual, input)
+              yield("#{last_input}#{output}", actual, input)
               last_input = input
             end
           end
-          session.steps.pop
           session.close
-          session.steps.pop
           session.run(options)
         end
       end
@@ -40,7 +38,7 @@ module ShellTest
       def initialize(shell='/bin/sh', env={})
         @shell = shell
         @env = {'PS1' => '$ ', 'PS2' => '> '}.merge(env)
-        @parser = Parser.new(env)
+        @parser = Parser.new(@env.dup)
         @steps = [[nil, nil, nil, nil]]
       end
 
@@ -50,10 +48,19 @@ module ShellTest
 
       def on(prompt, input, max_run_time=nil, &callback)
         last = steps.last
-        last[0] = prompt
-        last[1] = input
+
+        if prompt.nil?
+          unless input.nil?
+            raise "cannot provide input without a prompt: #{input.inspect}"
+          end
+          last[2] = max_run_time
+        else
+          last[0] = prompt
+          last[1] = input
+          steps << [nil, nil, max_run_time, nil]
+        end
+
         last[3] = callback
-        steps << [nil, nil, max_run_time, nil]
         self
       end
 
@@ -63,13 +70,13 @@ module ShellTest
 
       def close
         unless closed?
-          on(parser.ps1r, "exit $?\n")
+          on parser.ps1r,  "exit $?\n"
         end
       end
 
       def closed?
-        close_step = steps[-2]
-        close_step && close_step[1] =~ /\Aexit (\d+|\$\?)\z/ ? true : false
+        next_to_last_input = steps[-2][1]
+        next_to_last_input && next_to_last_input =~ /^exit /
       end
 
       def run(opts={})

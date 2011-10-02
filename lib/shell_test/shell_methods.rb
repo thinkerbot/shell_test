@@ -5,6 +5,7 @@ require 'shell_test/shell_methods/session'
 module ShellTest
   module ShellMethods
     include StringMethods
+    include Utils
 
     def setup
       super
@@ -56,7 +57,7 @@ module ShellTest
 
     def _assert_script_match(script, options={})
       Session.run("/bin/sh", script, options) do |expected, actual, cmd|
-        _assert_script_match expected, actual, cmd
+        _assert_str_match expected, actual, cmd
       end
       if status = options[:status]
         assert_equal(status, $?.exitstatus)

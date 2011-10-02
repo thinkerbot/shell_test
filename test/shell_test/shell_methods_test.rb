@@ -31,49 +31,41 @@ class ShellMethodsTest < Test::Unit::TestCase
   #
 
   def test_assert_script_correctly_matches_no_output
-    assert_script %Q{
-printf ''
-}
-
-    assert_script %Q{printf ''}
+    assert_script %{
+      $ printf ''
+    }
   end
 
   def test_assert_script_correctly_matches_whitespace_output
-    assert_script %Q{
-printf "\\t\\n  "
-\t
-  }
-    assert_script %Q{
-echo
-
-}
-    assert_script %Q{echo
-
-}
+    assert_script %{
+      $ printf "\\t\\n  "
+      \t
+        
+    }
   end
 
   def test_assert_script_strips_indents
     assert_script %Q{
-    echo goodnight
+    $ echo goodnight
     goodnight
     }
 
     assert_script %Q{ \t   \r
-    echo goodnight
+    $ echo goodnight
     goodnight
     }
 
     assert_script %Q{
-    printf "\\t\\n  "
+    $ printf "\\t\\n  "
     \t
       }
 
     assert_script %Q{
-    echo
+    $ echo
 
     }
 
-    assert_script %Q{echo
+    assert_script %Q{$ echo
 
 }
   end
@@ -116,9 +108,9 @@ echo
 
   def test__assert_script_does_not_strip_indents
     _assert_script %Q{
-    printf "    \\t\\n      "
+    $ printf "    \\t\\n      "
     \t
-      }, :outdent => false
+      }
   end
 
   #
