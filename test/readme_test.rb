@@ -78,7 +78,7 @@ class ReadmeTest < Test::Unit::TestCase
               $ cal
               :...:
               Su Mo Tu We Th Fr Sa
-              :...:
+              :....:
             }
           end
         end

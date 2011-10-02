@@ -86,7 +86,7 @@ output/status checking, or specify a different exit status to expect.
         $ cal
         :...:
         Su Mo Tu We Th Fr Sa
-        :...:
+        :....:
       }
     end
   end

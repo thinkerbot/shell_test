@@ -12,8 +12,8 @@ class RegexpEscapeTest < Test::Unit::TestCase
     assert_equal 'reg\[exp\]\+\ chars\.\ are\(quoted\)', RegexpEscape.escape('reg[exp]+ chars. are(quoted)')
     assert_equal 'these\ are\ not:\ a(b*)c',  RegexpEscape.escape('these are not: :.a(b*)c.:')
 
-    assert_equal '_.*?_.*?_.*?', RegexpEscape.escape('_:..:_:...:_:....:')
-    assert_equal '.{1}', RegexpEscape.escape(':..{1}.:')
+    assert_equal 'a.*?b(?:(?m).*?)c', RegexpEscape.escape('a:...:b:....:c')
+    assert_equal 'a.{1}b', RegexpEscape.escape('a:..{1}.:b') 
 
     str = %q{
 a multiline
@@ -48,9 +48,16 @@ example}
     assert_equal 'abcdef', RegexpEscape.escape("ab:.c.:de:.f.:")
   end
 
-  def test_escape_treats_all_period_escapes_as_a_lazy_match_any
-    assert_equal "ab.*?c", RegexpEscape.escape("ab:..:c")
-    assert_equal "a.*?b.*?c", RegexpEscape.escape("a:..:b:......:c")
+  def test_escape_treats_no_str_as_no_str
+    assert_equal "az", RegexpEscape.escape("a:..:z")
+  end
+
+  def test_escape_treats_single_period_as_a_single_line_lazy_match_to_any
+    assert_equal "a.*?z", RegexpEscape.escape("a:...:z")
+  end
+
+  def test_escape_treats_multiple_periods_as_a_multiline_lazy_match_to_any
+    assert_equal "a(?:(?m).*?)z", RegexpEscape.escape("a:......:z")
   end
 
   #

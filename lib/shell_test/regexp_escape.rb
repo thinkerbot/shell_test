@@ -1,23 +1,25 @@
 module ShellTest
   # RegexpEscape is a subclass of regexp that escapes all but the text in a
-  # special escape sequence.  This allows the creation of complex regexps
-  # to match, for instance, console output.
+  # special escape sequence.  This allows the creation of complex regexps to
+  # match, for instance, console output.
   #
-  # The RegexpEscape.escape (or equivalently the quote) method does the
-  # work; all regexp-active characters are escaped except for characters
-  # enclosed by ':.' and '.:' delimiters.
+  # The RegexpEscape.escape (or equivalently the quote) method does the work;
+  # all regexp-active characters are escaped except for characters enclosed by
+  # ':.' and '.:' delimiters.
   #
   #   RegexpEscape.escape('reg[exp]+ chars. are(quoted)')       # => 'reg\[exp\]\+\ chars\.\ are\(quoted\)'
   #   RegexpEscape.escape('these are not: :.a(b*)c.:')          # => 'these\ are\ not:\ a(b*)c'
   #
-  # In addition, all-period regexps are automatically upgraded to '.*?';
-  # use the '.{n}' notation to specify n arbitrary characters.
+  # All-period regexps are treated specially.  A single period is translated
+  # to '.*?' to lazily match anything on a single line.  Multiple periods are
+  # translated to '(?:(?m).*?)' to lazily match anything actoss multiple
+  # lines. Use the '.{n}' notation to specify n arbitrary characters.
   #
-  #   RegexpEscape.escape('_:..:_:...:_:....:')        # => '_.*?_.*?_.*?'
-  #   RegexpEscape.escape(':..{1}.:')                  # => '.{1}'
+  #   RegexpEscape.escape('a:...:b:....:c')        # => 'a.*?b(?:(?m).*?)c'
+  #   RegexpEscape.escape('a:..{1}.:b')            # => 'a.{1}b'
   #
-  # RegexpEscape instances are initialized using the escaped input string
-  # and return the original string upon to_s.
+  # RegexpEscape instances are initialized using the escaped input string and
+  # return the original string upon to_s.
   #
   #   str = %q{
   #   a multiline
@@ -50,8 +52,14 @@ module ShellTest
         substituents = []
         str.scan(ESCAPE_SEQUENCE) do
           regexp_str = $&[2...-2]
-          regexp_str = ".*?" if regexp_str =~ /^\.*$/
-          substituents << regexp_str
+          substituents << case regexp_str
+          when '.'
+            ".*?"
+          when /\A\.+\z/
+            "(?:(?m).*?)"
+          else
+            regexp_str
+          end
         end
         substituents << ""
 
