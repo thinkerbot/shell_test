@@ -17,22 +17,20 @@ module ShellTest
 
     def _pty(script, options={}, &block)
       options = default_pty_options.merge(options)
-
       session = Session.new(options)
       session.parse(script, &block)
 
       result = []
-      current_cmd = nil
       begin
         session.run(options) do |output, cmd|
           result << output
-          current_cmd = cmd
+          result << cmd
         end
-        result.join
-      rescue
-        $!.message << "\n#{result.join}#{current_cmd}"
-        raise
+      rescue Exception
+        linebreak = '-' * 57
+        raise $!, "\nPTY Session:\n#{linebreak}\n#{result.join}#{linebreak}\n\n#{$!.message.strip}\n"
       end
+      result
     end
 
     def assert_script(script, options={})
@@ -41,7 +39,7 @@ module ShellTest
 
     def _assert_script(script, options={})
       _pty(script, options) do |expected, actual, cmd|
-        _assert_str_equal expected, actual, cmd
+        _assert_str_equal expected, actual
       end
 
       if status = options[:exitstatus]
