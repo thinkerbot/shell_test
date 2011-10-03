@@ -20,7 +20,19 @@ module ShellTest
 
       session = Session.new(options)
       session.parse(script, &block)
-      session.run(options)
+
+      result = []
+      current_cmd = nil
+      begin
+        session.run(options) do |output, cmd|
+          result << output
+          current_cmd = cmd
+        end
+        result.join
+      rescue
+        $!.message << "\n#{result.join}#{current_cmd}"
+        raise
+      end
     end
 
     def assert_script(script, options={})

@@ -107,8 +107,8 @@ module ShellTest
       def parse(script)
         split(script).each do |output, input, prompt, max_run_time|
           if block_given?
-            on(prompt, input, max_run_time) do |actual|
-              yield(output, actual, input)
+            on(prompt, input, max_run_time) do |actual, cmd|
+              yield(output, actual, cmd)
             end
           else
             on(prompt, input, max_run_time)
@@ -137,11 +137,11 @@ module ShellTest
               buffer = agent.expect(prompt, timeout, 1024)
 
               if callback
-                callback.call buffer
+                callback.call buffer, input
               end
 
               if block_given?
-                yield buffer
+                yield buffer, input
               end
 
               if input
