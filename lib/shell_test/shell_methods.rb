@@ -7,37 +7,6 @@ module ShellTest
     include StringMethods
     include EnvMethods
 
-    def setup
-      super
-      @notify_method_name = true
-    end
-
-    # Returns true if the ENV variable 'VERBOSE' is true.  When verbose,
-    # ShellTest prints the expanded commands of sh_test to $stdout.
-    def verbose?
-      verbose = ENV['VERBOSE']
-      verbose && verbose =~ /^true$/i ? true : false
-    end
-
-    def sh(cmd)
-      if @notify_method_name && verbose?
-        @notify_method_name = false
-        puts
-        puts method_name 
-      end
-
-      start  = Time.now
-      result = `#{cmd}`
-      finish = Time.now
-
-      if verbose?
-        elapsed = "%.3f" % [finish-start]
-        puts "  (#{elapsed}s) #{cmd}"
-      end
-
-      result
-    end
-
     def default_session_options
       {:stty => 'raw'}
     end

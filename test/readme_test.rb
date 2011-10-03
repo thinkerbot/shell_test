@@ -27,7 +27,7 @@ class ReadmeTest < Test::Unit::TestCase
       })
     end
     
-    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
+    result = `ruby -I'#{LIBDIR}' '#{script}'`
     assert_equal 0, $?.exitstatus, indent(result, '    ')
   end
   
@@ -85,7 +85,7 @@ class ReadmeTest < Test::Unit::TestCase
       })
     end
     
-    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
+    result = `ruby -I'#{LIBDIR}' '#{script}'`
     assert_equal 0, $?.exitstatus, indent(result, '    ')
   end
   
@@ -105,7 +105,7 @@ class ReadmeTest < Test::Unit::TestCase
       })
     end
 
-    result = sh "ruby -I'#{LIBDIR}' '#{script}'"
+    result = `ruby -I'#{LIBDIR}' '#{script}'`
     assert_equal 0, $?.exitstatus, indent(result, '    ')
   end
 end

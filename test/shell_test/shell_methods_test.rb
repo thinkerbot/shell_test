@@ -5,28 +5,6 @@ class ShellMethodsTest < Test::Unit::TestCase
   include ShellTest::ShellMethods
 
   #
-  # verbose test
-  #
-
-  def test_verbose_is_true_if_VERBOSE_is_truish
-    with_env 'VERBOSE' => 'true' do
-      assert_equal true, verbose?
-    end
-
-    with_env 'VERBOSE' => 'TruE' do
-      assert_equal true, verbose?
-    end
-
-    with_env 'VERBOSE' => 'false' do
-      assert_equal false, verbose?
-    end
-
-    with_env 'VERBOSE' => nil do
-      assert_equal false, verbose?
-    end
-  end
-
-  #
   # assert_script test
   #
 
