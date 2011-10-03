@@ -38,12 +38,15 @@ module ShellTest
       result
     end
 
-    def session_test(shell, script, options={})
-      
-      session.parse(script) do |expected, actual, cmd|
-        
-      end
-      session.run(options)
+    def default_session_options
+      {:stty => 'raw'}
+    end
+
+    def pty(script, options={}, &block)
+      options = default_session_options.merge(options)
+      session = Session.new(options)
+      session.parse(script, &block)
+      session.run
     end
 
     def assert_script(script, options={})
@@ -51,12 +54,9 @@ module ShellTest
     end
 
     def _assert_script(script, options={})
-      options = {:stty => 'raw'}.merge(options)
-      session = Session.new(options)
-      session.parse(script) do |expected, actual, cmd|
+      pty(script, options) do |expected, actual, cmd|
         _assert_str_equal expected, actual, cmd
       end
-      session.run
 
       if status = options[:exitstatus]
         assert_equal(status, $?.exitstatus)
@@ -68,12 +68,9 @@ module ShellTest
     end
 
     def _assert_script_match(script, options={})
-      options = {:stty => 'raw'}.merge(options)
-      session = Session.new(options)
-      session.parse(script) do |expected, actual, cmd|
+      pty(script, options) do |expected, actual, cmd|
         _assert_str_match expected, actual, cmd
       end
-      session.run
 
       if status = options[:exitstatus]
         assert_equal(status, $?.exitstatus)

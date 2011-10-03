@@ -9,33 +9,27 @@ module ShellTest
       include EnvMethods
       include Utils
 
+      DEFAULT_SHELL = '/bin/sh'
+      DEFAULT_PS1 = '$ '
+      DEFULAT_PS2 = '> '
+
       attr_reader :shell
-      attr_reader :env
-      attr_reader :parser
-      attr_reader :steps
       attr_reader :ps1
       attr_reader :ps2
-      attr_reader :ps1r
-      attr_reader :ps2r
       attr_reader :stty
+      attr_reader :steps
 
       def initialize(options={})
-        @shell = options[:shell] || '/bin/sh'
-        @env   = options[:env] || {}
-        @env['PS1'] ||= '$ '
-        @env['PS2'] ||= '> '
+        @shell = options[:shell] || DEFAULT_SHELL
+        @ps1   = options[:ps1] || DEFAULT_PS1
+        @ps2   = options[:ps2] || DEFULAT_PS2
         @stty  = options[:stty] || nil
 
-        @ps1 = @env['PS1']
-        @ps1r = /#{Regexp.escape(@ps1)}/
-        @ps2 = @env['PS2']
-        @ps2r = /#{Regexp.escape(@ps2)}/
+        @ps1r    = /#{Regexp.escape(ps1)}/
+        @ps2r    = /#{Regexp.escape(ps2)}/
         @promptr = /(#{@ps1r}|#{@ps2r}|{{(.*?)}})/
-        @steps = [[nil, nil, nil, nil]]
-      end
 
-      def ssteps
-        steps.collect {|s| s[0,3]}
+        @steps = [[nil, nil, nil, nil]]
       end
 
       def on(prompt, input, max_run_time=nil, &callback)
@@ -114,14 +108,6 @@ module ShellTest
         last_input = ''
         split(script).each do |output, input, prompt, max_run_time|
           on(prompt, input, max_run_time) do |actual|
-
-            # clean unless raw output is desired
-            # unless raw
-            #   output = parser.strip(output, input, prompt)
-            #   actual = parser.strip(actual, input, prompt)
-            # end
-            # puts last_input.scan(/.{0,80}/).inspect
-
             yield(output, actual, input)
             last_input = input
           end
@@ -132,7 +118,7 @@ module ShellTest
         opts = {:clock => Time, :max_run_time => 1}.merge(opts)
         timer = Timer.new(opts[:clock])
 
-        with_env(env) do
+        with_env('PS1' => ps1, 'PS2' => ps2) do
           spawn(shell) do |master, slave|
             agent = Agent.new(master, slave, :timer => timer)
             timer.start(opts[:max_run_time])
