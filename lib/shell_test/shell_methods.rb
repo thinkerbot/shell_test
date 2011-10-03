@@ -7,15 +7,20 @@ module ShellTest
     include StringMethods
     include EnvMethods
 
-    def default_session_options
-      {:stty => 'raw'}
+    def default_pty_options
+      {:stty => 'raw', :max_run_time => 1}
     end
 
     def pty(script, options={}, &block)
-      options = default_session_options.merge(options)
+      _pty outdent(script), options, &block
+    end
+
+    def _pty(script, options={}, &block)
+      options = default_pty_options.merge(options)
+
       session = Session.new(options)
       session.parse(script, &block)
-      session.run
+      session.run(options)
     end
 
     def assert_script(script, options={})
@@ -23,7 +28,7 @@ module ShellTest
     end
 
     def _assert_script(script, options={})
-      pty(script, options) do |expected, actual, cmd|
+      _pty(script, options) do |expected, actual, cmd|
         _assert_str_equal expected, actual, cmd
       end
 
@@ -37,7 +42,7 @@ module ShellTest
     end
 
     def _assert_script_match(script, options={})
-      pty(script, options) do |expected, actual, cmd|
+      _pty(script, options) do |expected, actual, cmd|
         _assert_str_match expected, actual, cmd
       end
 

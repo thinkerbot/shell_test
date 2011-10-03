@@ -105,11 +105,13 @@ module ShellTest
       end
 
       def parse(script)
-        last_input = ''
         split(script).each do |output, input, prompt, max_run_time|
-          on(prompt, input, max_run_time) do |actual|
-            yield(output, actual, input)
-            last_input = input
+          if block_given?
+            on(prompt, input, max_run_time) do |actual|
+              yield(output, actual, input)
+            end
+          else
+            on(prompt, input, max_run_time)
           end
         end
       end

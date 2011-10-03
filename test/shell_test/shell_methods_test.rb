@@ -5,6 +5,17 @@ class ShellMethodsTest < Test::Unit::TestCase
   include ShellTest::ShellMethods
 
   #
+  # pty test
+  #
+
+  def test_pty_allows_specification_of_max_run_time
+    err = assert_raises(Agent::UnsatisfiedError) do
+      pty "$ sleep 1\n", :max_run_time => 0.1
+    end
+    assert_equal 'timeout waiting for /\$\ /', err.message
+  end
+
+  #
   # assert_script test
   #
 
