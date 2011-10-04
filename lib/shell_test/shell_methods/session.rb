@@ -16,14 +16,12 @@ module ShellTest
       attr_reader :shell
       attr_reader :ps1
       attr_reader :ps2
-      attr_reader :stty
       attr_reader :steps
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
         @ps1   = options[:ps1] || DEFAULT_PS1
         @ps2   = options[:ps2] || DEFULAT_PS2
-        @stty  = options[:stty] || nil
 
         @ps1r    = /#{Regexp.escape(ps1)}/
         @ps2r    = /#{Regexp.escape(ps2)}/
@@ -125,7 +123,7 @@ module ShellTest
       end
 
       def run(opts={})
-        opts = {:clock => Time, :max_run_time => 1}.merge(opts)
+        opts  = {:clock => Time, :max_run_time => 1, :stty => nil}.merge(opts)
         timer = Timer.new(opts[:clock])
 
         with_env('PS1' => ps1, 'PS2' => ps2) do
@@ -133,7 +131,7 @@ module ShellTest
             agent = Agent.new(master, slave, :timer => timer)
             timer.start(opts[:max_run_time])
 
-            if stty
+            if stty = opts[:stty]
               # Use a partial_len > 1 as a minor optimization.  There is no
               # need to be precise (ultimately it's for readpartial).
               agent.expect(@ps1r, 1, 32)
