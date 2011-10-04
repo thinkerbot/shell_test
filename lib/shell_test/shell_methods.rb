@@ -8,7 +8,7 @@ module ShellTest
     include EnvMethods
 
     def default_pty_options
-      {:stty => 'raw', :max_run_time => 1}
+      {:stty => 'raw', :max_run_time => 1, :trim => true}
     end
 
     def pty(script, options={}, &block)
@@ -18,7 +18,7 @@ module ShellTest
     def _pty(script, options={}, &block)
       options = default_pty_options.merge(options)
       session = Session.new(options)
-      session.parse(script, &block)
+      session.parse(script, options, &block)
 
       result = []
       begin

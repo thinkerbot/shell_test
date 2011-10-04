@@ -104,10 +104,18 @@ module ShellTest
         steps
       end
 
-      def parse(script)
+      def parse(script, opts={})
+        trim_prompt = opts[:trim]
+
         split(script).each do |output, input, prompt, max_run_time|
           if block_given?
             on(prompt, input, max_run_time) do |actual, cmd|
+
+              if trim_prompt && prompt
+                output = trim(output, prompt)
+                actual = trim(actual, prompt)
+              end
+
               yield(output, actual, cmd)
             end
           else

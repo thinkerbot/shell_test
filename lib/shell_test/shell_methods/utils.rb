@@ -20,6 +20,15 @@ module ShellTest
           end
         end
       end
+
+      # Trims a string at the last match of regexp.
+      #
+      #   trim("abc\n$ ", /\$\ /)  # => "abc\n"
+      #
+      def trim(str, regexp)
+        segments = str.scan(regexp)
+        str.chomp segments.last
+      end
     end
   end
 end

@@ -23,4 +23,17 @@ class UtilsTest < Test::Unit::TestCase
     end
     assert_equal :result, result
   end
+
+  #
+  # trim test
+  #
+
+  def test_trim_documentation
+    assert_equal "abc\n", trim("abc\n$ ", /\$\ /)
+  end
+
+  def test_trim_trims_a_string_at_the_last_match_of_regexp
+    assert_equal "abc", trim("abcxyz", /\w{3}/)
+    assert_equal "abc", trim("abc", /xyz/)
+  end
 end
