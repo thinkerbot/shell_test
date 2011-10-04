@@ -47,7 +47,8 @@ class AgentTest < Test::Unit::TestCase
 
   def setup
     super
-    @agent = Agent.new(*IO.pipe.reverse, :timer => CountdownTimer.new)
+    slave, master = IO.pipe
+    @agent = Agent.new(master, slave, :timer => CountdownTimer.new)
   end
 
   def teardown

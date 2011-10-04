@@ -21,6 +21,30 @@ module ShellTest
         end
       end
 
+      if RUBY_VERSION =~ /^1\.8\./
+        undef spawn
+        def spawn(cmd)
+          result, exception = nil, nil
+          begin
+            PTY.spawn(cmd) do |slave, master, pid|
+              begin
+                result = yield(master, slave)
+              rescue Exception
+                Process.kill(9, pid)
+                exception = $!
+                raise
+              ensure
+                Process.wait(pid)
+              end
+            end
+          rescue PTY::ChildExited
+            system "echo 'exit #{$!.status.exitstatus}' | sh"
+            raise exception if exception
+          end
+          result
+        end
+      end
+
       # Trims a string at the last match of regexp.
       #
       #   trim("abc\n$ ", /\$\ /)  # => "abc\n"

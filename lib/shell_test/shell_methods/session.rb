@@ -25,7 +25,7 @@ module ShellTest
 
         @ps1r    = /#{Regexp.escape(ps1)}/
         @ps2r    = /#{Regexp.escape(ps2)}/
-        @promptr = /(#{@ps1r}|#{@ps2r}|{{(.*?)}})/
+        @promptr = /(#{@ps1r}|#{@ps2r}|\{\{(.*?)\}\})/
 
         @steps = [[nil, nil, nil, nil]]
       end
@@ -163,7 +163,7 @@ module ShellTest
 
       def capture(opts={})
         buffer = []
-        run(opts) {|str| buffer << str }
+        run(opts) {|output, input| buffer << output }
         buffer.join
       end
     end
