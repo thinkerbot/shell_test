@@ -16,12 +16,14 @@ module ShellTest
       attr_reader :shell
       attr_reader :ps1
       attr_reader :ps2
+      attr_reader :timer
       attr_reader :steps
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
         @ps1   = options[:ps1] || DEFAULT_PS1
         @ps2   = options[:ps2] || DEFULAT_PS2
+        @timer = options[:timer] || Timer.new
 
         @ps1r    = /#{Regexp.escape(ps1)}/
         @ps2r    = /#{Regexp.escape(ps2)}/
@@ -123,8 +125,7 @@ module ShellTest
       end
 
       def run(opts={})
-        opts  = {:clock => Time, :max_run_time => 1, :stty => nil}.merge(opts)
-        timer = Timer.new(opts[:clock])
+        opts  = {:max_run_time => 1, :stty => nil}.merge(opts)
 
         with_env('PS1' => ps1, 'PS2' => ps2) do
           spawn(shell) do |master, slave|

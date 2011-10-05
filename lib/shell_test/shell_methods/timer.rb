@@ -32,11 +32,15 @@ module ShellTest
         start_time.nil? || stop_time.nil? ? false : true
       end
 
+      def elapsed_time
+        current_time - start_time
+      end
+
       def stop
         if running?
-          elapsed_time = current_time - start_time
+          elapsed = elapsed_time
           reset
-          elapsed_time
+          elapsed
         else
           nil
         end

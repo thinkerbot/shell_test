@@ -17,20 +17,42 @@ module ShellTest
 
     def _pty(script, options={}, &block)
       options = default_pty_options.merge(options)
+      result = []
+
       session = Session.new(options)
       session.parse(script, options, &block)
 
-      result = []
       begin
         session.run(options) do |output, cmd|
           result << output
           result << cmd
         end
       rescue Exception
-        linebreak = '-' * 57
-        raise $!, "\nPTY Session:\n#{linebreak}\n#{result.join}#{linebreak}\n\n#{$!.message.strip}\n"
+        raise $!, format_pty_exception($!.message, session, result.join)
       end
       result
+    end
+
+    def format_pty_exception(message, session, result)
+      args = [session.shell, session.timer.elapsed_time, result, message]
+
+      if message =~ /---.*---/
+%Q{
+%s (%.2fs)
+=========================================================
+%s
+%s
+=========================================================
+}
+      else
+%Q{
+%s (%.2fs)
+=========================================================
+%s
+=========================================================
+%s
+}
+      end  % args
     end
 
     def assert_script(script, options={})
@@ -39,7 +61,12 @@ module ShellTest
 
     def _assert_script(script, options={})
       _pty(script, options) do |expected, actual, cmd|
-        _assert_str_equal expected, actual
+        _assert_str_equal expected, actual do
+%Q{-------------------- expected output --------------------
+#{whitespace_escape(expected)}
+------------------------ but was ------------------------
+#{whitespace_escape(actual)}}
+        end
       end
 
       if status = options[:exitstatus]
@@ -53,7 +80,12 @@ module ShellTest
 
     def _assert_script_match(script, options={})
       _pty(script, options) do |expected, actual, cmd|
-        _assert_str_match expected, actual
+        _assert_str_match expected, actual do
+%Q{----------------- expected output like ------------------
+#{whitespace_escape(expected)}
+------------------------ but was ------------------------
+#{whitespace_escape(actual)}}
+        end
       end
 
       if status = options[:exitstatus]
