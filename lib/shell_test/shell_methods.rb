@@ -53,7 +53,7 @@ module ShellTest
 
     def _assert_script_match(script, options={})
       _pty(script, options) do |expected, actual, cmd|
-        _assert_str_match expected, actual, cmd
+        _assert_str_match expected, actual
       end
 
       if status = options[:exitstatus]

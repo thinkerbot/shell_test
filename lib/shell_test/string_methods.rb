@@ -3,19 +3,20 @@ module ShellTest
     # Asserts whether or not the a and b strings are equal, with a more
     # readable output than assert_equal for large strings (especially large
     # strings with significant whitespace).
-    def assert_str_equal(a, b, msg=nil)
-      _assert_str_equal outdent(a), b, msg
+    def assert_str_equal(a, b, msg=nil, &block)
+      _assert_str_equal outdent(a), b, msg, &block
     end
 
     def _assert_str_equal(a, b, msg=nil)
       if a == b
         assert true
       else
-        flunk %Q{
+        flunk block_given? ? yield(a, b) : %Q{
+=========================================================
 #{msg}
-==================== expected output ====================
+-------------------- expected output --------------------
 #{whitespace_escape(a)}
-======================== but was ========================
+------------------------ but was ------------------------
 #{whitespace_escape(b)}
 =========================================================
 }
@@ -27,9 +28,9 @@ module ShellTest
     # with assert_match.
     #
     # If a is a string it is turned into a RegexpEscape.
-    def assert_str_match(a, b, msg=nil)
+    def assert_str_match(a, b, msg=nil, &block)
       a = outdent(a) if a.kind_of?(String)
-      _assert_str_match a, b, msg
+      _assert_str_match a, b, msg, &block
     end
 
     def _assert_str_match(a, b, msg=nil)
@@ -40,11 +41,12 @@ module ShellTest
       if b =~ a
         assert true
       else
-        flunk %Q{
+        flunk block_given? ? yield(a,b) : %Q{
+=========================================================
 #{msg}
-================= expected output like ==================
+----------------- expected output like ------------------
 #{whitespace_escape(a)}
-======================== but was ========================
+------------------------ but was ------------------------
 #{whitespace_escape(b)}
 =========================================================
 }

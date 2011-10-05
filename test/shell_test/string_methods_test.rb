@@ -45,6 +45,16 @@ line two
 }, "line one\nline two\n"
   end
 
+  def test_assert_str_equal_yields_to_block_for_message_if_given
+    err = assert_raises(TestUnitErrorClass) do
+      assert_str_equal 'a', 'b' do |a,b|
+        "#{a}..#{b}"
+      end
+    end
+
+    assert_equal "a..b", err.message
+  end
+
   #
   # assert_str_match test
   #
@@ -55,5 +65,15 @@ line two
 
   def test_assert_str_match_regexp_escapes_strings
     assert_str_match "a:...:c", "...alot of random stuff toc..."
+  end
+
+  def test_assert_str_match_yields_to_block_for_message_if_given
+    err = assert_raises(TestUnitErrorClass) do
+      assert_str_match(/a/, 'b') do |a,b|
+        "#{a}..#{b}"
+      end
+    end
+
+    assert_equal "(?-mix:a)..b", err.message
   end
 end
