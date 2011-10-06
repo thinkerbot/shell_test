@@ -67,4 +67,14 @@ class UtilsTest < Test::Unit::TestCase
     assert_equal "ac", bell("a\ac")
     assert_equal "ac", bell("ac\a")
   end
+
+  #
+  # ff test
+  #
+
+  def test_ff_adds_ff_chars
+    assert_equal "\nac", ff("\fac")
+    assert_equal "a\n c", ff("a\fc")
+    assert_equal "ac\n  ", ff("ac\f")
+  end
 end

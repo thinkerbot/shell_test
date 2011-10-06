@@ -146,6 +146,8 @@ module ShellTest
               actual = bs(actual)
               output = bell(output)
               actual = bell(actual)
+              output = ff(output)
+              actual = ff(actual)
 
               yield(self, output, actual)
             end

@@ -43,6 +43,12 @@ module ShellTest
       def bell(str)
         str.gsub(/#{"\a"}/, '')
       end
+
+      def ff(str)
+        str.gsub(/(^.*?)\f/) do |match|
+          "#{$1}\n#{' ' * $1.length}"
+        end
+      end
     end
   end
 end

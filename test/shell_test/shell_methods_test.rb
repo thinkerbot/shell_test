@@ -135,6 +135,14 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_with_form_feed
+    assert_script %q{
+      $ ruby -e 'print "abc\fxyz\n"'
+      abc
+         xyz
+    }
+  end
+
   def test_assert_script_for_example_cut_from_terminal
     parent_dir = __FILE__.chomp('.rb')
     dir = File.join(parent_dir, __name__)
