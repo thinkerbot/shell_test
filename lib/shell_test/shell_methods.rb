@@ -8,7 +8,7 @@ module ShellTest
     include EnvMethods
 
     def default_pty_options
-      {:max_run_time => 1, :trim => true, :cr => true}
+      {:max_run_time => 2, :mode => {:rm_prompt => true, :rm_cr => true}}
     end
 
     def pty(script, options={}, &block)
@@ -19,8 +19,8 @@ module ShellTest
       options = default_pty_options.merge(options)
 
       session = Session.new(options)
-      session.parse(script, options, &block)
-      session.run(options[:max_run_time])
+      session.parse(script, &block)
+      session.run
     end
 
     def assert_script(script, options={})

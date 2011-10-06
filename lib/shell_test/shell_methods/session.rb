@@ -22,6 +22,8 @@ module ShellTest
       attr_reader :timer
       attr_reader :steps
       attr_reader :log
+      attr_reader :mode
+      attr_reader :max_run_time
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
@@ -29,6 +31,8 @@ module ShellTest
         @ps2   = options[:ps2] || DEFULAT_PS2
         @stty  = options[:stty] || '-echo -onlcr'
         @timer = options[:timer] || Timer.new
+        @mode  = options[:mode] || {}
+        @max_run_time = options[:max_run_time] || 1
 
         @ps1r    = /#{Regexp.escape(ps1)}/
         @ps2r    = /#{Regexp.escape(ps2)}/
@@ -123,20 +127,17 @@ module ShellTest
       # Steps are registered with a callback block, if given, to recieve the
       # expected and actual outputs during run.  Normally the callback is used
       # to validate that the run is going as planned.
-      def parse(script, opts={})
-        trim_prompt = opts[:trim]
-        trim_cr = opts[:cr]
-
+      def parse(script)
         split(script).each do |output, input, prompt, max_run_time|
           if block_given?
             on(prompt, input, max_run_time) do |actual|
 
-              if trim_prompt && prompt
+              if mode[:rm_prompt] && prompt
                 output = trim(output, prompt)
                 actual = trim(actual, prompt)
               end
 
-              if trim_cr
+              if mode[:rm_cr]
                 output = cr(output)
                 actual = cr(actual)
               end
@@ -149,7 +150,7 @@ module ShellTest
         end
       end
 
-      def run(max_run_time=1)
+      def run
         log.clear
 
         with_env('PS1' => ps1, 'PS2' => ps2) do
