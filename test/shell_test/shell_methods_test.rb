@@ -102,44 +102,39 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
-  def test_assert_script_with_cr
+  def test_assert_script_with_bell
     assert_script %q{
-      $ ruby - <<DOC
-      > print "abc"
-      > print "\r"
-      > print "xyz"
-      > print "\n"
-      > DOC
-      xyz
-    }
-  end
-
-  def test_assert_script_with_tab
-    assert_script %q{
-      $ ruby -e 'print "abc\txyz\n"'
-      abc	xyz
+      $ printf "abc\axyz\n"
+      abcxyz
     }
   end
 
   def test_assert_script_with_backspace
     assert_script %q{
-      $ ruby -e 'print "abc\bx\byz\n"'
+      $ printf "abc\bx\byz\n"
       abyz
     }
   end
 
-  def test_assert_script_with_bell
+  def test_assert_script_with_horizontal_tab
     assert_script %q{
-      $ ruby -e 'print "abc\axyz\n"'
-      abcxyz
+      $ printf "abc\txyz\n"
+      abc	xyz
     }
   end
 
   def test_assert_script_with_form_feed
     assert_script %q{
-      $ ruby -e 'print "abc\fxyz\n"'
+      $ printf "abc\fxyz\n"
       abc
          xyz
+    }
+  end
+
+  def test_assert_script_with_carriage_return
+    assert_script %q{
+      $ printf "abc\rxyz\n"
+      xyz
     }
   end
 
