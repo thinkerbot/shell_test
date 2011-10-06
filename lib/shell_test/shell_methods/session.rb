@@ -135,26 +135,32 @@ module ShellTest
             agent = Agent.new(master, slave, :timer => timer)
             timer.start(max_run_time)
 
-            if stty
-              # Use a partial_len > 1 as a minor optimization.  There is no
-              # need to be precise (ultimately it's for readpartial).
-              agent.expect(@ps1r, 1, 32)
-              agent.write "stty #{stty}\n"
-              agent.expect(/\n/, 1, 32)
-            end
-
-            steps.each do |prompt, input, timeout, callback|
-              buffer = agent.expect(prompt, timeout, 1024)
-              log << buffer
-
-              if callback
-                callback.call buffer
+            begin
+              if stty
+                # Use a partial_len > 1 as a minor optimization.  There is no
+                # need to be precise (ultimately it's for readpartial).
+                agent.expect(@ps1r, 1, 32)
+                agent.write "stty #{stty}\n"
+                agent.expect(/\n/, 1, 32)
               end
 
-              if input
-                log << input
-                agent.write(input)
+              steps.each do |prompt, input, timeout, callback|
+                buffer = agent.expect(prompt, timeout, 1024)
+                log << buffer
+
+                if callback
+                  callback.call buffer
+                end
+
+                if input
+                  log << input
+                  agent.write(input)
+                end
               end
+            rescue Agent::UnsatisfiedError
+              log << $!.buffer
+              $!.message << "\n#{status}"
+              raise
             end
 
             agent.close

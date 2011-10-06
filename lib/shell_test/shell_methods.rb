@@ -20,14 +20,7 @@ module ShellTest
 
       session = Session.new(options)
       session.parse(script, options, &block)
-
-      begin
-        session.run(options[:max_run_time])
-      rescue Agent::UnsatisfiedError
-        session.log << $!.buffer
-        $!.message << "\n#{session.status}"
-        raise
-      end
+      session.run(options[:max_run_time])
     end
 
     def assert_script(script, options={})
