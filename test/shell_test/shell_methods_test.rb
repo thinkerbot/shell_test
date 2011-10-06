@@ -102,6 +102,18 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_for_cr
+    assert_script %q{
+      $ ruby - <<DOC
+      > print "abc"
+      > print "\r"
+      > print "xyz"
+      > print "\n"
+      > DOC
+      xyz
+    }
+  end
+
   def test_assert_script_for_example_cut_from_terminal
     parent_dir = __FILE__.chomp('.rb')
     dir = File.join(parent_dir, __name__)

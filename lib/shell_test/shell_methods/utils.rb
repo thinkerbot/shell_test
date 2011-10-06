@@ -29,6 +29,12 @@ module ShellTest
         segments = str.scan(regexp)
         str.chomp segments.last
       end
+
+      # Causes carriage returns to remove string content up to the previous
+      # line.  This normalizes literal output like "abc\rxyz" to "xyz".
+      def cr(str)
+        str.gsub(/^.*?\r/, '')
+      end
     end
   end
 end

@@ -125,6 +125,7 @@ module ShellTest
       # to validate that the run is going as planned.
       def parse(script, opts={})
         trim_prompt = opts[:trim]
+        trim_cr = opts[:cr]
 
         split(script).each do |output, input, prompt, max_run_time|
           if block_given?
@@ -133,6 +134,11 @@ module ShellTest
               if trim_prompt && prompt
                 output = trim(output, prompt)
                 actual = trim(actual, prompt)
+              end
+
+              if trim_cr
+                output = cr(output)
+                actual = cr(actual)
               end
 
               yield(self, output, actual)

@@ -36,4 +36,15 @@ class UtilsTest < Test::Unit::TestCase
     assert_equal "abc", trim("abcxyz", /\w{3}/)
     assert_equal "abc", trim("abc", /xyz/)
   end
+
+  #
+  # cr test
+  #
+
+  def test_cr_removes_carriage_returns_back_to_newline
+    assert_equal "xyz", cr("abc\rxyz")
+    assert_equal "abc\nxyz\n", cr("abc\nXYZ\rxyz\n")
+    assert_equal "", cr("abc\r")
+    assert_equal "abc\n", cr("abc\n\r")
+  end
 end
