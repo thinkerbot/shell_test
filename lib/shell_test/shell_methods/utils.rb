@@ -39,6 +39,10 @@ module ShellTest
       def bs(str)
         str.gsub(/(?:\A|.)#{"\b"}/, '')
       end
+
+      def bell(str)
+        str.gsub(/#{"\a"}/, '')
+      end
     end
   end
 end

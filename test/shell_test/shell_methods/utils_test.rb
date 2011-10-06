@@ -53,8 +53,18 @@ class UtilsTest < Test::Unit::TestCase
   #
 
   def test_bs_removes_backspace_and_previous_char
-    assert_equal "c", bs("\bc")
+    assert_equal "ac", bs("\bac")
     assert_equal "c", bs("a\bc")
     assert_equal "a", bs("ac\b")
+  end
+
+  #
+  # bell test
+  #
+
+  def test_bell_removes_bell_char
+    assert_equal "ac", bell("\aac")
+    assert_equal "ac", bell("a\ac")
+    assert_equal "ac", bell("ac\a")
   end
 end
