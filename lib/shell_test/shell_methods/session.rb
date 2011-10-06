@@ -148,6 +148,8 @@ module ShellTest
               actual = bell(actual)
               output = ff(output)
               actual = ff(actual)
+              output = null(output)
+              actual = null(actual)
 
               yield(self, output, actual)
             end

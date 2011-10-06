@@ -102,6 +102,13 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_with_null
+    assert_script %q{
+      $ printf "abc\0xyz\n"
+      abcxyz
+    }
+  end
+
   def test_assert_script_with_bell
     assert_script %q{
       $ printf "abc\axyz\n"
@@ -120,6 +127,14 @@ class ShellMethodsTest < Test::Unit::TestCase
     assert_script %q{
       $ printf "abc\txyz\n"
       abc	xyz
+    }
+  end
+
+  def test_assert_script_with_line_feed
+    assert_script %q{
+      $ printf "abc\nxyz\n"
+      abc
+      xyz
     }
   end
 

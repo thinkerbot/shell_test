@@ -69,6 +69,16 @@ class UtilsTest < Test::Unit::TestCase
   end
 
   #
+  # null test
+  #
+
+  def test_null_removes_null_char
+    assert_equal "ac", null("\0ac")
+    assert_equal "ac", null("a\0c")
+    assert_equal "ac", null("ac\0")
+  end
+
+  #
   # ff test
   #
 

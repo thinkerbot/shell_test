@@ -44,6 +44,10 @@ module ShellTest
         str.gsub(/#{"\a"}/, '')
       end
 
+      def null(str)
+        str.gsub("\0", '')
+      end
+
       def ff(str)
         str.gsub(/(^.*?)\f/) do |match|
           "#{$1}\n#{' ' * $1.length}"
