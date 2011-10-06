@@ -16,20 +16,23 @@ module ShellTest
       attr_reader :shell
       attr_reader :ps1
       attr_reader :ps2
+      attr_reader :stty
       attr_reader :timer
       attr_reader :steps
+      attr_reader :log
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
         @ps1   = options[:ps1] || DEFAULT_PS1
         @ps2   = options[:ps2] || DEFULAT_PS2
+        @stty  = options[:stty] || '-onlcr -echo'
         @timer = options[:timer] || Timer.new
 
         @ps1r    = /#{Regexp.escape(ps1)}/
         @ps2r    = /#{Regexp.escape(ps2)}/
         @promptr = /(#{@ps1r}|#{@ps2r}|\{\{(.*?)\}\})/
-
-        @steps = [[nil, nil, nil, nil]]
+        @steps   = [[nil, nil, nil, nil]]
+        @log     = []
       end
 
       def on(prompt, input, max_run_time=nil, &callback)
@@ -109,14 +112,14 @@ module ShellTest
 
         split(script).each do |output, input, prompt, max_run_time|
           if block_given?
-            on(prompt, input, max_run_time) do |actual, cmd|
+            on(prompt, input, max_run_time) do |actual|
 
               if trim_prompt && prompt
                 output = trim(output, prompt)
                 actual = trim(actual, prompt)
               end
 
-              yield(output, actual, cmd)
+              yield(self, output, actual)
             end
           else
             on(prompt, input, max_run_time)
@@ -124,15 +127,15 @@ module ShellTest
         end
       end
 
-      def run(opts={})
-        opts  = {:max_run_time => 1, :stty => nil}.merge(opts)
+      def run(max_run_time=1)
+        log.clear
 
         with_env('PS1' => ps1, 'PS2' => ps2) do
           spawn(shell) do |master, slave|
             agent = Agent.new(master, slave, :timer => timer)
-            timer.start(opts[:max_run_time])
+            timer.start(max_run_time)
 
-            if stty = opts[:stty]
+            if stty
               # Use a partial_len > 1 as a minor optimization.  There is no
               # need to be precise (ultimately it's for readpartial).
               agent.expect(@ps1r, 1, 32)
@@ -142,16 +145,14 @@ module ShellTest
 
             steps.each do |prompt, input, timeout, callback|
               buffer = agent.expect(prompt, timeout, 1024)
+              log << buffer
 
               if callback
-                callback.call buffer, input
-              end
-
-              if block_given?
-                yield buffer, input
+                callback.call buffer
               end
 
               if input
+                log << input
                 agent.write(input)
               end
             end
@@ -160,12 +161,21 @@ module ShellTest
             timer.stop
           end
         end
+
+        self
       end
 
-      def capture(opts={})
-        buffer = []
-        run(opts) {|output, input| buffer << output }
-        buffer.join
+      def result
+        log.join
+      end
+
+      def status(format=nil)
+        (format || %Q{
+%s (%.2fs)
+=========================================================
+%s
+=========================================================
+}) % [shell, timer.elapsed_time, result]
       end
     end
   end

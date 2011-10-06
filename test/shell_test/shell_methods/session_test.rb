@@ -57,33 +57,33 @@ class SessionTest < Test::Unit::TestCase
   end
 
   #
-  # capture test
+  # run test
   #
 
-  def test_capture_captures_output_and_sets_exit_status
+  def test_run_captures_output_into_result_and_sets_exit_status
     session.on(/\$\ /, "echo hello world\n")
     session.on(/\$\ /, "exit 8\n")
 
-    assert_equal "$ echo hello world\r\nhello world\r\n$ exit 8\r\nexit\r\n", session.capture
+    assert_equal "$ echo hello world\nhello world\n$ exit 8\nexit\n", session.run.result
     assert_equal 8, $?.exitstatus
   end
 
-  def test_capture_for_multiline_commands
+  def test_run_for_multiline_commands
     session.on(/\$\ /, "echo ab\\\n")
     session.on(/>\ /, "c\n")
     session.on(/\$\ /, "exit\n")
 
-    assert_equal "$ echo ab\\\r\n> c\r\nabc\r\n$ exit\r\nexit\r\n", session.capture
+    assert_equal "$ echo ab\\\n> c\nabc\n$ exit\nexit\n", session.run.result
     assert_equal 0, $?.exitstatus
   end
 
-  def test_capture_with_different_ps1_and_ps2
+  def test_run_with_different_ps1_and_ps2
     session = Session.new(:ps1 => '% ', :ps2 => ': ')
     session.on(/\% /, "echo ab\\\n")
     session.on(/\: /, "c\n")
     session.on(/\% /, "exit\n")
 
-    assert_equal "% echo ab\\\r\n: c\r\nabc\r\n% exit\r\nexit\r\n", session.capture
+    assert_equal "% echo ab\\\n: c\nabc\n% exit\nexit\n", session.run.result
     assert_equal 0, $?.exitstatus
   end
 end
