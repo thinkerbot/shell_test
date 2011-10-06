@@ -102,6 +102,38 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_for_example_cut_from_terminal
+    dir = File.join(__FILE__.chomp('.rb'), __name__)
+    begin
+      FileUtils.mkdir_p(dir)
+      Dir.chdir(dir) do
+        assert_script %q{
+          $ for n in one two; do
+          > echo $n
+          > done
+          one
+          two
+          $ printf "abcdefgh"
+          abcdefgh$ printf "xyz\n"
+          xyz
+          $ cat > file <<DOC
+          > abc
+          > xyz
+          > pqr
+          > DOC
+          $ cat file file file file file file file file file | tr "\n" '.'
+          abc.xyz.pqr.abc.xyz.pqr.abc.xyz.pqr.abc.xyz.pqr.abc.xyz.pqr.abc.xyz.pqr.abc.xyz.pqr.abc.xyz.pqr.abc.xyz.pqr.$ 
+          $ 
+          $ rm file
+          $ exit
+          exit
+        }
+      end
+    ensure
+      FileUtils.rm_r(dir)
+    end
+  end
+
   def test_assert_script_fails_on_mismatch
     assert_raises(TestUnitErrorClass) { assert_script %Q{printf ""\nflunk} }
     assert_raises(TestUnitErrorClass) { assert_script %Q{echo pass\nflunk} }
