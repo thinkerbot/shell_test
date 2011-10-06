@@ -8,7 +8,7 @@ module ShellTest
     include EnvMethods
 
     def default_pty_options
-      {:stty => 'raw', :max_run_time => 1, :trim => true}
+      {:max_run_time => 1, :trim => true}
     end
 
     def pty(script, options={}, &block)
