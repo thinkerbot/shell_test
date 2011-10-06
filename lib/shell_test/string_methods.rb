@@ -74,7 +74,7 @@ module ShellTest
         when "\f" then "\\f"
         else match
         end
-      end
+      end.gsub("\b", "\\b")
     end
   end
 end

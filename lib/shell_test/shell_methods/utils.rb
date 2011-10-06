@@ -35,6 +35,10 @@ module ShellTest
       def cr(str)
         str.gsub(/^.*?\r/, '')
       end
+
+      def bs(str)
+        str.gsub(/(?:\A|.)#{"\b"}/, '')
+      end
     end
   end
 end

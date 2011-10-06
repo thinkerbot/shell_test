@@ -102,7 +102,7 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
-  def test_assert_script_for_cr
+  def test_assert_script_with_cr
     assert_script %q{
       $ ruby - <<DOC
       > print "abc"
@@ -111,6 +111,13 @@ class ShellMethodsTest < Test::Unit::TestCase
       > print "\n"
       > DOC
       xyz
+    }
+  end
+
+  def test_assert_script_with_backspace
+    assert_script %q{
+      $ ruby -e 'print "abc\bx\byz\n"'
+      abyz
     }
   end
 

@@ -142,6 +142,9 @@ module ShellTest
                 actual = cr(actual)
               end
 
+              output = bs(output)
+              actual = bs(actual)
+
               yield(self, output, actual)
             end
           else

@@ -47,4 +47,14 @@ class UtilsTest < Test::Unit::TestCase
     assert_equal "", cr("abc\r")
     assert_equal "abc\n", cr("abc\n\r")
   end
+
+  #
+  # bs test
+  #
+
+  def test_bs_removes_backspace_and_previous_char
+    assert_equal "c", bs("\bc")
+    assert_equal "c", bs("a\bc")
+    assert_equal "a", bs("ac\b")
+  end
 end
