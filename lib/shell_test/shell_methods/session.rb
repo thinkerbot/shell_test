@@ -5,6 +5,8 @@ require 'strscan'
 
 module ShellTest
   module ShellMethods
+    
+    # Session is an engine for running shell sessions.
     class Session
       include EnvMethods
       include Utils
@@ -25,7 +27,7 @@ module ShellTest
         @shell = options[:shell] || DEFAULT_SHELL
         @ps1   = options[:ps1] || DEFAULT_PS1
         @ps2   = options[:ps2] || DEFULAT_PS2
-        @stty  = options[:stty] || '-onlcr -echo'
+        @stty  = options[:stty] || '-echo -onlcr'
         @timer = options[:timer] || Timer.new
 
         @ps1r    = /#{Regexp.escape(ps1)}/
@@ -107,6 +109,20 @@ module ShellTest
         steps
       end
 
+      # Parses a terminal snippet into steps that a Session can run, and adds
+      # those steps to self.  The snippet should utilize ps1 and ps2 as set on
+      # self.  If an exit command is not explicity given, then one is added.
+      #
+      #   session = Session.new
+      #   session.parse %{
+      #   $ echo abc
+      #   abc
+      #   }
+      #   session.run.result   # => "$ echo abc\nabc\n$ exit $?\nexit\n"
+      #
+      # Steps are registered with a callback block, if given, to recieve the
+      # expected and actual outputs during run.  Normally the callback is used
+      # to validate that the run is going as planned.
       def parse(script, opts={})
         trim_prompt = opts[:trim]
 
@@ -171,10 +187,20 @@ module ShellTest
         self
       end
 
+      # Returns what would appear to the user at the current point in the
+      # session (with granularity of an input/output step).
+      #
+      # Currently result ONLY works as intended when stty is set to turn off
+      # input echo and output carriage returns, either with '-echo -onlcr'
+      # (the default) or 'raw'.  Otherwise the inputs can appear twice in the
+      # result and there will be inconsistent end-of-lines.
       def result
         log.join
       end
 
+      # Formats the status of self into a string. A format string can be
+      # provided - it is evaluated using '%' using arguments: [shell,
+      # elapsed_time, result]
       def status(format=nil)
         (format || %Q{
 %s (%.2fs)

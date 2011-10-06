@@ -57,6 +57,19 @@ class SessionTest < Test::Unit::TestCase
   end
 
   #
+  # parse test
+  #
+
+  def test_parse_documentation
+    session = Session.new
+    session.parse %{
+$ echo abc
+abc
+}
+    assert_equal "$ echo abc\nabc\n$ exit $?\nexit\n", session.run.result
+  end
+
+  #
   # run test
   #
 
