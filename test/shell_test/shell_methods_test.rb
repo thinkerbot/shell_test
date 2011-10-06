@@ -114,6 +114,13 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_with_tab
+    assert_script %q{
+      $ ruby -e 'print "abc\txyz\n"'
+      abc	xyz
+    }
+  end
+
   def test_assert_script_with_backspace
     assert_script %q{
       $ ruby -e 'print "abc\bx\byz\n"'
