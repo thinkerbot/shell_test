@@ -103,7 +103,9 @@ class ShellMethodsTest < Test::Unit::TestCase
   end
 
   def test_assert_script_for_example_cut_from_terminal
-    dir = File.join(__FILE__.chomp('.rb'), __name__)
+    parent_dir = __FILE__.chomp('.rb')
+    dir = File.join(parent_dir, __name__)
+
     begin
       FileUtils.mkdir_p(dir)
       Dir.chdir(dir) do
@@ -130,7 +132,7 @@ class ShellMethodsTest < Test::Unit::TestCase
         }
       end
     ensure
-      FileUtils.rm_r(dir)
+      FileUtils.rm_r(parent_dir)
     end
   end
 
