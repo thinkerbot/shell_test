@@ -87,6 +87,29 @@ task :test do
   end
 end
 
+desc 'Run the tests many times for stability check'
+task :test_n, :n do |task, args|
+  tests = Dir.glob('test/**/*_test.rb')
+  tests.delete_if {|test| test =~ /_test\/test_/ }
+
+  n = args.n || 100
+  fails = 0
+  n.times do
+    output = `ruby -w -Ilib -e 'ARGV.dup.each {|test| load test}' '#{tests.join("' '")}'`
+    output =~ /Started(.*?)Finished/m
+    progress = $1.strip
+    puts "%-8d%s" % [$?.pid, progress]
+
+    if progress =~ /[F|E]/
+      fails += 1 
+      puts output.scan(/^test_.*$/).join("\n")
+    end
+  end
+
+  puts
+  puts "Pass: #{n - fails} Fails: #{fails}"
+end
+
 desc 'Run the cc tests'
 task :cc => :test
 
