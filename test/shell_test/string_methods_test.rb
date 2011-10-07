@@ -52,7 +52,9 @@ line two
       end
     end
 
-    assert_equal "a..b", err.message
+    # code this defensively such that a terminal period is allowed
+    # by Test::Unit flunk (MiniTest adds no such period)
+    assert_equal "a..b", err.message.chomp('.')
   end
 
   #
@@ -74,6 +76,8 @@ line two
       end
     end
 
-    assert_equal "(?-mix:a)..b", err.message
+    # code this defensively such that a terminal period is allowed
+    # by Test::Unit flunk (MiniTest adds no such period)
+    assert_equal "(?-mix:a)..b", err.message.chomp('.')
   end
 end
