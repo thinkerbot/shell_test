@@ -102,7 +102,8 @@ task :test_n, :n do |task, args|
 
     if progress =~ /[F|E]/
       fails += 1 
-      puts output.scan(/^test_.*$/).join("\n")
+      $stderr.puts output
+      $stdout.puts output.scan(/^test_.*$/).join("\n")
     end
   end
 
