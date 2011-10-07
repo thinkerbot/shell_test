@@ -38,53 +38,62 @@ class UtilsTest < Test::Unit::TestCase
   end
 
   #
-  # cr test
+  # reformat test
   #
 
-  def test_cr_removes_carriage_returns_back_to_newline
-    assert_equal "xyz", cr("abc\rxyz")
-    assert_equal "abc\nxyz\n", cr("abc\nXYZ\rxyz\n")
-    assert_equal "", cr("abc\r")
-    assert_equal "abc\n", cr("abc\n\r")
+  def test_reformat_documentation
+    assert_equal "abc",     reformat("ab\0c")
+    assert_equal "abc",     reformat("ab\ac")
+    assert_equal "ac",      reformat("ab\bc")
+    assert_equal "ab\tc",   reformat("ab\tc")
+    assert_equal "ab\nc",   reformat("ab\nc")
+    assert_equal "ab\n  c", reformat("ab\fc")
+    assert_equal "c",       reformat("ab\rc")
   end
 
-  #
-  # bs test
-  #
-
-  def test_bs_removes_backspace_and_previous_char
-    assert_equal "ac", bs("\bac")
-    assert_equal "c", bs("a\bc")
-    assert_equal "a", bs("ac\b")
+  def test_reformat_removes_null_char
+    assert_equal "ac", reformat("\0ac")
+    assert_equal "ac", reformat("a\0c")
+    assert_equal "ac", reformat("ac\0")
   end
 
-  #
-  # bell test
-  #
-
-  def test_bell_removes_bell_char
-    assert_equal "ac", bell("\aac")
-    assert_equal "ac", bell("a\ac")
-    assert_equal "ac", bell("ac\a")
+  def test_reformat_removes_bell_char
+    assert_equal "ac", reformat("\aac")
+    assert_equal "ac", reformat("a\ac")
+    assert_equal "ac", reformat("ac\a")
   end
 
-  #
-  # null test
-  #
-
-  def test_null_removes_null_char
-    assert_equal "ac", null("\0ac")
-    assert_equal "ac", null("a\0c")
-    assert_equal "ac", null("ac\0")
+  def test_reformat_removes_backspace_and_previous_char
+    assert_equal "ac", reformat("\bac")
+    assert_equal "c",  reformat("a\bc")
+    assert_equal "a",  reformat("ac\b")
   end
 
-  #
-  # ff test
-  #
+  def test_reformat_preserves_tab
+    assert_equal "\tac", reformat("\tac")
+    assert_equal "a\tc", reformat("a\tc")
+    assert_equal "ac\t", reformat("ac\t")
+  end
 
-  def test_ff_adds_ff_chars
-    assert_equal "\nac", ff("\fac")
-    assert_equal "a\n c", ff("a\fc")
-    assert_equal "ac\n  ", ff("ac\f")
+  def test_reformat_preserves_newline
+    assert_equal "\nac", reformat("\nac")
+    assert_equal "a\nc", reformat("a\nc")
+    assert_equal "ac\n", reformat("ac\n")
+  end
+
+  def test_reformat_adds_ff_chars
+    assert_equal "\nac",   reformat("\fac")
+    assert_equal "a\n c",  reformat("a\fc")
+    assert_equal "ac\n  ", reformat("ac\f")
+  end
+
+  def test_reformat_removes_carriage_returns_back_to_newline
+    assert_equal "ac", reformat("\rac")
+    assert_equal "c",  reformat("a\rc")
+    assert_equal "",   reformat("ac\r")
+
+    assert_equal "ab\nxy", reformat("ab\n\rxy")
+    assert_equal "ab\ny",  reformat("ab\nx\ry")
+    assert_equal "ab\n",   reformat("ab\nxy\r")
   end
 end

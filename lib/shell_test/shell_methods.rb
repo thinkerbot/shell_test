@@ -8,7 +8,7 @@ module ShellTest
     include EnvMethods
 
     def default_pty_options
-      {:max_run_time => 2, :mode => {:rm_prompt => true, :rm_cr => true}}
+      {:max_run_time => 2, :visual => true}
     end
 
     def pty(script, options={}, &block)

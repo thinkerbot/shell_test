@@ -22,7 +22,7 @@ module ShellTest
       attr_reader :timer
       attr_reader :steps
       attr_reader :log
-      attr_reader :mode
+      attr_reader :visual
       attr_reader :max_run_time
 
       def initialize(options={})
@@ -31,7 +31,7 @@ module ShellTest
         @ps2   = options[:ps2] || DEFULAT_PS2
         @stty  = options[:stty] || '-echo -onlcr'
         @timer = options[:timer] || Timer.new
-        @mode  = options[:mode] || {}
+        @visual  = options[:visual] || true
         @max_run_time = options[:max_run_time] || 1
 
         @ps1r    = /#{Regexp.escape(ps1)}/
@@ -132,24 +132,12 @@ module ShellTest
           if block_given?
             on(prompt, input, max_run_time) do |actual|
 
-              if mode[:rm_prompt] && prompt
+              if visual && prompt
                 output = trim(output, prompt)
                 actual = trim(actual, prompt)
+                output = reformat(output)
+                actual = reformat(actual)
               end
-
-              if mode[:rm_cr]
-                output = cr(output)
-                actual = cr(actual)
-              end
-
-              output = bs(output)
-              actual = bs(actual)
-              output = bell(output)
-              actual = bell(actual)
-              output = ff(output)
-              actual = ff(actual)
-              output = null(output)
-              actual = null(actual)
 
               yield(self, output, actual)
             end

@@ -30,28 +30,23 @@ module ShellTest
         str.chomp segments.last
       end
 
-      # Causes carriage returns to remove string content up to the previous
-      # line.  This normalizes literal output like "abc\rxyz" to "xyz".
-      def cr(str)
-        str.gsub(/^.*?\r/, '')
-      end
-
-      def bs(str)
-        str.gsub(/(?:\A|.)#{"\b"}/, '')
-      end
-
-      def bell(str)
-        str.gsub(/#{"\a"}/, '')
-      end
-
-      def null(str)
-        str.gsub("\0", '')
-      end
-
-      def ff(str)
-        str.gsub(/(^.*?)\f/) do |match|
-          "#{$1}\n#{' ' * $1.length}"
-        end
+      # Reformats control characters in str to their printable equivalents.
+      # Specifically:
+      #
+      #   ctrl char         before    after
+      #   null              "ab\0c"    "abc"
+      #   bell              "ab\ac"    "abc"
+      #   backspace         "ab\bc"    "ac"
+      #   horizonal tab     "ab\tc"    "ab\tc"
+      #   line feed         "ab\nc"    "ab\nc"
+      #   form feed         "ab\fc"    "ab\n  c"
+      #   carraige return   "ab\rc"    "c"
+      #
+      def reformat(str)
+        str = str.gsub(/^.*?\r/, '')
+        str.gsub!(/(\A#{"\b"}|.#{"\b"}|#{"\a"}|#{"\0"})/m, '')
+        str.gsub!(/(^.*?)\f/) {|match| "#{$1}\n#{' ' * $1.length}" }
+        str
       end
     end
   end
