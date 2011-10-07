@@ -132,11 +132,9 @@ module ShellTest
           if block_given?
             on(prompt, input, max_run_time) do |actual|
 
-              if visual && prompt
-                output = trim(output, prompt)
-                actual = trim(actual, prompt)
-                output = reformat(output)
-                actual = reformat(actual)
+              if visual
+                output = reformat(output, prompt)
+                actual = reformat(actual, prompt)
               end
 
               yield(self, output, actual)

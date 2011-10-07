@@ -21,15 +21,6 @@ module ShellTest
         end
       end
 
-      # Trims a string at the last match of regexp.
-      #
-      #   trim("abc\n$ ", /\$\ /)  # => "abc\n"
-      #
-      def trim(str, regexp)
-        segments = str.scan(regexp)
-        str.chomp segments.last
-      end
-
       # Reformats control characters in str to their printable equivalents.
       # Specifically:
       #
@@ -42,8 +33,14 @@ module ShellTest
       #   form feed         "ab\fc"    "ab\n  c"
       #   carraige return   "ab\rc"    "c"
       #
-      def reformat(str)
-        str = str.gsub(/^.*?\r/, '')
+      # Also trims a string at the last match of regexp, if given.
+      #
+      #   reformat("abc\n$ ", /\$\ /)  # => "abc\n"
+      #
+      def reformat(str, regexp=nil)
+        tail = regexp ? str.scan(regexp).last : nil
+        str  = str.chomp tail
+        str.gsub!(/^.*?\r/, '')
         str.gsub!(/(\A#{"\b"}|.#{"\b"}|#{"\a"}|#{"\0"})/m, '')
         str.gsub!(/(^.*?)\f/) {|match| "#{$1}\n#{' ' * $1.length}" }
         str
