@@ -92,7 +92,7 @@ task :test_n, :n do |task, args|
   tests = Dir.glob('test/**/*_test.rb')
   tests.delete_if {|test| test =~ /_test\/test_/ }
 
-  n = args.n || 100
+  n = (args.n || 100).to_i
   fails = 0
   n.times do
     output = `ruby -w -Ilib -e 'ARGV.dup.each {|test| load test}' '#{tests.join("' '")}'`
