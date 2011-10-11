@@ -159,7 +159,12 @@ module ShellTest
                 # need to be precise (ultimately it's for readpartial).
                 agent.expect(@ps1r, 1, 32)
                 agent.write "stty #{stty}\n"
-                agent.expect(/\n/, 1, 32)
+
+                # Expect ps1 a second time to clear the stty echo from the
+                # slave. Note ps1 + \n is more reliable than expecting the
+                # newline at the end of the stty.
+                agent.expect(@ps1r, 1, 32)
+                agent.write "\n"
               end
 
               steps.each do |prompt, input, timeout, callback|
