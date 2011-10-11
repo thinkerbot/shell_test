@@ -41,11 +41,14 @@ module ShellTest
       # data being read from the slave than is necessary to match the regexp.
       def expect(regexp, timeout=nil, partial_len=1)
         timer.timeout = timeout
-        timeout = timer.timeout
 
         buffer = ''
         while true
-          if !IO.select([slave],nil,nil,timer.timeout)
+          # This voodoo helps prevent timeouts for some reason... perhaps to
+          # minimize the chance of scheduling between calculation and select?
+          timeout = timer.timeout
+
+          unless IO.select([slave],nil,nil,timeout)
             msg = "timeout waiting for %s" % [regexp ? regexp.inspect : 'EOF']
             raise UnsatisfiedError.new(msg, buffer)
           end
