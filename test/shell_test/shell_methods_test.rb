@@ -10,7 +10,7 @@ class ShellMethodsTest < Test::Unit::TestCase
 
   def test_pty_captures_agent_errors_with_session_status
     err = assert_raises(Agent::UnsatisfiedError) do
-      pty "$ echo 'abc'; sleep 1\n", :max_run_time => 0.1
+      pty "$ echo 'abc'; sleep 1\n", :max_run_time => 0.2
     end
     assert_str_match %q{
       timeout waiting for /\$\ /
