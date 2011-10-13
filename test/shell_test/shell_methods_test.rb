@@ -152,7 +152,11 @@ class ShellMethodsTest < Test::Unit::TestCase
       xyz
     }
   end
-
+  def test_exit_status
+    assert_script %{
+      $ false
+    }, :exitstatus => 1
+  end
   def test_assert_script_for_example_cut_from_terminal
     parent_dir = __FILE__.chomp('.rb')
     dir = File.join(parent_dir, __name__)
@@ -180,7 +184,7 @@ class ShellMethodsTest < Test::Unit::TestCase
           $ rm file
           $ exit
           exit
-        }
+        }, :noexit => true
       end
     ensure
       FileUtils.rm_r(parent_dir)
@@ -188,8 +192,8 @@ class ShellMethodsTest < Test::Unit::TestCase
   end
 
   def test_assert_script_fails_on_mismatch
-    assert_raises(TestUnitErrorClass) { assert_script %Q{printf ""\nflunk} }
-    assert_raises(TestUnitErrorClass) { assert_script %Q{echo pass\nflunk} }
+    assert_raises(TestUnitErrorClass) { assert_script %Q{$ printf ""\nflunk} }
+    assert_raises(TestUnitErrorClass) { assert_script %Q{$ echo pass\nflunk} }
   end
 
   #

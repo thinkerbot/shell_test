@@ -19,7 +19,7 @@ module ShellTest
       options = default_pty_options.merge(options)
 
       session = Session.new(options)
-      session.parse(script, &block)
+      session.parse(script, options, &block)
       session.run
     end
 

@@ -41,31 +41,23 @@ module ShellTest
         @log     = []
       end
 
-      def on(prompt, input, max_run_time=nil, &callback)
-        last = steps.last
-
-        if prompt.nil?
-          unless input.nil?
-            raise "cannot provide input without a prompt: #{input.inspect}"
-          end
-          last[2] = max_run_time
-        else
-          last[0] = prompt
-          last[1] = input
-          steps << [nil, nil, max_run_time, nil]
+      def on(prompt, input=nil, max_run_time=nil, &callback)
+        if prompt.nil? && !input.nil?
+          raise "cannot provide input without a prompt: #{input.inspect}"
         end
-
-        last[3] = callback
+        last = steps.last
+        last[0] = prompt
+        last[1] = input
+        last[2] = max_run_time
+        steps << [nil, nil, nil, callback]
         self
       end
 
       def split(str)
         scanner = StringScanner.new(str)
-        scanner.scan(/\s+/)
 
-        steps   = []
-        last_max_run_time = nil
-        while output = scanner.scan_until(@promptr)
+        args = []
+        while output = scanner.scan_until(args.empty? ? /(#{@ps1r})/ : @promptr)
           match = scanner[1]
           input = scanner[2].to_s + scanner.scan_until(/\n/)
 
@@ -90,27 +82,14 @@ module ShellTest
             prompt = /^#{output[start, length]}\z/
           end
 
-          steps << [output, input, prompt, last_max_run_time]
-          last_max_run_time = max_run_time
+          args << output
+          args << prompt
+          args << input
+          args << max_run_time
         end
 
-        if steps.empty?
-          input  = scanner.scan(/.+?\n/)
-          output = scanner.rest
-          steps << [output + ps1, input, @ps1r, nil]
-        else
-          steps << [scanner.rest, nil, nil, last_max_run_time]
-        end
-
-        unless steps.length > 1 && steps[-2][1] =~ /^exit(?:$|\s)/
-          last_step     = steps[-1]
-          last_step[0] += ps1
-          last_step[1]  = "exit $?\n"
-          last_step[2]  = @ps1r
-          steps << ["exit\n", nil, nil, nil]
-        end
-
-        steps
+        args << scanner.rest
+        args
       end
 
       # Parses a terminal snippet into steps that a Session can run, and adds
@@ -127,21 +106,34 @@ module ShellTest
       # Steps are registered with a callback block, if given, to recieve the
       # expected and actual outputs during run.  Normally the callback is used
       # to validate that the run is going as planned.
-      def parse(script)
-        split(script).each do |output, input, prompt, max_run_time|
-          if block_given?
-            on(prompt, input, max_run_time) do |actual|
+      def parse(script, options={}, &block)
+        args = split(script)
+        args.shift # ignore script before first prompt
 
-              if visual
-                output = reformat(output, prompt)
-                actual = reformat(actual, prompt)
-              end
+        unless options[:noexit]
+          args.last << ps1
+          args.concat [@ps1r, "exit $?\n", nil, "exit\n"]
+          args.concat [/exit\n/, nil, nil, nil]
+        end
 
-              yield(self, output, actual)
-            end
-          else
-            on(prompt, input, max_run_time)
+        while !args.empty?
+          prompt, input, max_run_time, output = args.shift(4)
+          callback = validator(output, args.first, &block)
+          on(prompt, input, max_run_time, &callback)
+        end
+
+        self
+      end
+
+      def validator(output, next_prompt)
+        return nil unless output && block_given?
+        lambda do |actual|
+          if visual
+            output = reformat(output, next_prompt)
+            actual = reformat(actual, next_prompt)
           end
+
+          yield(self, output, actual)
         end
       end
 
@@ -167,7 +159,8 @@ module ShellTest
                 agent.write "\n"
               end
 
-              steps.each do |prompt, input, timeout, callback|
+              timeout  = nil
+              steps.each do |prompt, input, max_run_time, callback|
                 buffer = agent.expect(prompt, timeout, 1024)
                 log << buffer
 
@@ -179,7 +172,10 @@ module ShellTest
                   log << input
                   agent.write(input)
                 end
+
+                timeout = max_run_time
               end
+
             rescue Agent::UnsatisfiedError
               log << $!.buffer
               $!.message << "\n#{status}"
