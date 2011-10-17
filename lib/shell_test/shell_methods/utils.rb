@@ -5,10 +5,13 @@ module ShellTest
     module Utils
       module_function
 
-      # Spawns a PTY session and ensures $? is set correctly upon completion.
-      # The PTY process is killed upon an unhandled error (but the error is
-      # re-raised for further handling).  Returns the Process::Status for the
-      # session.
+      # Spawns a PTY session and returns the Process::Status for the session
+      # upon completion. The PTY process is killed upon an unhandled error
+      # (but the error is re-raised for further handling).
+      #
+      # Note that $? is not a reliable way to determine the status for the
+      # session (and AFAIK cannot be made reliable in 1.8.7) - rely on the
+      # output of spawn.
       def spawn(cmd)
         PTY.spawn(cmd) do |slave, master, pid|
           begin
@@ -16,8 +19,9 @@ module ShellTest
             Process.wait(pid)
 
           rescue PTY::ChildExited
-            # Provide an exit route for ChildExited on 1.8.6 and 1.8.7
-            # (1.9.2 does not exit this way).
+            # wait (and maybe other stuff) can cause a ChildExited error on
+            # 1.8.6 and 1.8.7 as a 'normal' exit route.  1.9.2 does not exit
+            # this way.
             return $!.status
 
           rescue Exception
