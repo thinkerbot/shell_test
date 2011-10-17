@@ -120,8 +120,8 @@ class FileMethodsTest < Test::Unit::TestCase
     b = prepare('b')
     c = prepare('c.txt')
 
-    assert_equal [a, b, c], glob('*')
-    assert_equal [a, c], glob('*.txt')
+    assert_equal [a, b, c], glob('*').sort
+    assert_equal [a, c], glob('*.txt').sort
   end
 
   #

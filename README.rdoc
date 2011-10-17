@@ -85,7 +85,7 @@ output/status checking, or specify a different exit status to expect.
       assert_script_match %{
         $ cal
         :...:
-        Su Mo Tu We Th Fr Sa
+        Su Mo Tu We Th Fr Sa:. *.:
         :....:
       }
     end

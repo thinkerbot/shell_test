@@ -77,7 +77,7 @@ class ReadmeTest < Test::Unit::TestCase
             assert_script_match %{
               $ cal
               :...:
-              Su Mo Tu We Th Fr Sa
+              Su Mo Tu We Th Fr Sa:. *.:
               :....:
             }
           end
