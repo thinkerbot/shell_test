@@ -23,7 +23,10 @@ module ShellTest
           rescue Exception
             # Cleanup the pty on error
             Process.kill(9, pid)
-            Process.wait(pid)
+
+            # Any wait can cause a ChildExited error so account for that here.
+            Process.wait(pid) rescue PTY::ChildExited
+
             raise
           end
         end
