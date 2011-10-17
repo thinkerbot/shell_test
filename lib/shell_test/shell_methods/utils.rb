@@ -7,11 +7,12 @@ module ShellTest
 
       # Spawns a PTY session and ensures $? is set correctly upon completion.
       # The PTY process is killed upon an unhandled error (but the error is
-      # re-raised for further handling).  Returns the result of the block.
+      # re-raised for further handling).  Returns the Process::Status for the
+      # session.
       def spawn(cmd)
         PTY.spawn(cmd) do |slave, master, pid|
           begin
-            return yield(master, slave)
+            yield(master, slave)
           rescue Exception
             Process.kill(9, pid)
             raise
@@ -19,6 +20,7 @@ module ShellTest
             Process.wait(pid)
           end
         end
+        $?
       end
 
       # Reformats control characters in str to their printable equivalents.
