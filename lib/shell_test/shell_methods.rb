@@ -28,7 +28,7 @@ module ShellTest
     end
 
     def _assert_script(script, options={})
-      session = _pty(script, options) do |session, expected, actual|
+      pty = _pty(script, options) do |session, expected, actual|
         _assert_str_equal expected, actual do
           session.status %Q{
 %s (%.2fs)
@@ -44,7 +44,7 @@ module ShellTest
       end
 
       if status = options[:exitstatus]
-        assert_equal(status, session.agent_status.exitstatus)
+        assert_equal(status, pty.agent_status.exitstatus)
       end
     end
 
@@ -53,7 +53,7 @@ module ShellTest
     end
 
     def _assert_script_match(script, options={})
-      session = _pty(script, options) do |session, expected, actual|
+      pty = _pty(script, options) do |session, expected, actual|
         _assert_str_match expected, actual do
           session.status %Q{
 %s (%.2fs)
@@ -69,7 +69,7 @@ module ShellTest
       end
 
       if status = options[:exitstatus]
-        assert_equal(status, session.agent_status.exitstatus)
+        assert_equal(status, pty.agent_status.exitstatus)
       end
     end
   end
