@@ -53,23 +53,32 @@ module ShellTest
             raise UnsatisfiedError.new(msg, buffer)
           end
 
-          if regexp.nil? && slave.eof?
+          begin
+            if regexp.nil? && slave.eof?
+              break
+            end
+
+            # Use readpartial instead of read because it will not block if the
+            # length is not fully available.
+            #
+            # Use readpartial+select instead of read_nonblock to avoid polling
+            # in a tight loop.
+            #
+            # Use readpartial instead of getc to allow larger partial lengths.
+            begin
+              buffer << slave.readpartial(partial_len)
+            rescue EOFError
+              raise UnsatisfiedError.new($!.message, buffer)
+            end
+
+          rescue Errno::EIO
+            # On some linux (ex ubuntu) read can return an eof or fail with
+            # an EIO error when a terminal disconnect occurs and an EIO
+            # condition occurs - the exact behavior is unspecified but the
+            # meaning is the same... no more data is available, so break.
             break
           end
-
-          # Use readpartial instead of read because it will not block if the
-          # length is not fully available.
-          #
-          # Use readpartial+select instead of read_nonblock to avoid polling
-          # in a tight loop.
-          #
-          # Use readpartial instead of getc to allow larger partial lengths.
-          begin
-            buffer << slave.readpartial(partial_len)
-          rescue EOFError
-            raise UnsatisfiedError.new($!.message, buffer)
-          end
-
+            
           if regexp && buffer =~ regexp
             break
           end
