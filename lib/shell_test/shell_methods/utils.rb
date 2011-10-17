@@ -13,13 +13,21 @@ module ShellTest
         PTY.spawn(cmd) do |slave, master, pid|
           begin
             yield(master, slave)
-          rescue Exception
-            Process.kill(9, pid)
-            raise
-          ensure
             Process.wait(pid)
+
+          rescue PTY::ChildExited
+            # Provide an exit route for ChildExited on 1.8.6 and 1.8.7
+            # (1.9.2 does not exit this way).
+            return $!.status
+
+          rescue Exception
+            # Cleanup the pty on error
+            Process.kill(9, pid)
+            Process.wait(pid)
+            raise
           end
         end
+
         $?
       end
 
@@ -49,8 +57,4 @@ module ShellTest
       end
     end
   end
-end
-
-if RUBY_VERSION =~ /^1\.8\./
-  require 'shell_test/shell_methods/shim'
 end
