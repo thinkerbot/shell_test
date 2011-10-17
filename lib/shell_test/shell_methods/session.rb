@@ -120,7 +120,10 @@ module ShellTest
         end
 
         while !args.empty?
-          prompt, input, max_run_time, output = args.shift(4)
+          prompt = args.shift
+          input  = args.shift
+          max_run_time = args.shift
+          output = args.shift
           callback = validator(output, args.first, &block)
           on(prompt, input, max_run_time, &callback)
         end
