@@ -183,7 +183,6 @@ class ShellMethodsTest < Test::Unit::TestCase
           $ 
           $ rm file
           $ exit
-          exit
         }, :noexit => true
       end
     ensure

@@ -112,10 +112,11 @@ module ShellTest
         args = split(script)
         args.shift # ignore script before first prompt
 
-        unless options[:noexit]
+        if options[:noexit]
+          args.pop
+        else
           args.last << ps1
-          args.concat [@ps1r, "exit $?\n", nil, "exit\n"]
-          args.concat [/exit\n/, nil, nil, nil]
+          args.concat [@ps1r, "exit $?\n", nil, nil]
         end
 
         while !args.empty?
@@ -163,8 +164,11 @@ module ShellTest
 
               timeout  = nil
               steps.each do |prompt, input, max_run_time, callback|
-                buffer = agent.expect(prompt, timeout, 1024)
-                log << buffer
+                buffer = agent.expect(prompt, timeout, 1)
+
+                if prompt
+                  log << buffer
+                end
 
                 if callback
                   callback.call buffer
