@@ -24,6 +24,7 @@ module ShellTest
       attr_reader :log
       attr_reader :visual
       attr_reader :max_run_time
+      attr_reader :agent_status
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
@@ -39,6 +40,7 @@ module ShellTest
         @promptr = /(#{@ps1r}|#{@ps2r}|\{\{(.*?)\}\})/
         @steps   = [[nil, nil, nil, nil]]
         @log     = []
+        @agent_status  = nil
       end
 
       def on(prompt, input=nil, max_run_time=nil, &callback)
@@ -141,7 +143,7 @@ module ShellTest
         log.clear
 
         with_env('PS1' => ps1, 'PS2' => ps2) do
-          spawn(shell) do |master, slave|
+          @agent_status = spawn(shell) do |master, slave|
             agent = Agent.new(master, slave, :timer => timer)
             timer.start(max_run_time)
 
