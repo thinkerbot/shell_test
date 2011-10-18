@@ -78,8 +78,13 @@ module ShellTest
         expect nil, timeout
       end
 
-      # Writes to the master.
-      def write(input)
+      # Writes to the master. A timeout may be given. If the master doesn't
+      # become available for writing within the timeout then write raises an
+      # WriteError.
+      def write(input, timeout=nil)
+        unless IO.select(nil,[master],nil,timeout)
+          raise WriteError.new("timeout waiting for master")
+        end
         master.print input
       end
 
@@ -91,6 +96,9 @@ module ShellTest
         unless slave.closed?
           slave.close
         end
+      end
+
+      class WriteError < RuntimeError
       end
 
       class ExpectError < RuntimeError

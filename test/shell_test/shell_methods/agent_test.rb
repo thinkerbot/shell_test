@@ -132,6 +132,15 @@ class AgentTest < Test::Unit::TestCase
     assert_equal "abc", agent.slave.read(3)
   end
 
+  def test_write_raises_error_if_master_is_not_vailable_within_timeout
+    err = assert_raises(Agent::WriteError) do
+      # Not knowing the exact size of the master, just do this a bunch of
+      # times until the master fills up and blocks.
+      65536.times { agent.write('abc', 0.1) }
+    end
+    assert_equal "timeout waiting for master", err.message
+  end
+
   #
   # close test
   #
