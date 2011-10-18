@@ -112,7 +112,7 @@ module ShellTest
           args.pop
         else
           args.last << ps1
-          args.concat [@ps1r, "exit $?\n", nil, nil]
+          args.concat [@ps1r, "exit\n", nil, nil]
         end
 
         callback = nil

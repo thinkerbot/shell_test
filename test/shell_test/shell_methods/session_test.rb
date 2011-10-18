@@ -70,7 +70,7 @@ class SessionTest < Test::Unit::TestCase
 $ echo abc
 abc
 }
-    assert_equal "$ echo abc\nabc\n$ exit $?\n", session.run.result
+    assert_equal "$ echo abc\nabc\n$ exit\n", session.run.result
   end
 
   #
