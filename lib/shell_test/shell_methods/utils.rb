@@ -40,8 +40,8 @@ module ShellTest
         $?
       end
 
-      # Reformats control characters in str to their printable equivalents.
-      # Specifically:
+      # Escapes non-printable characters (ie control characters) in str to
+      # their printable equivalents. Specifically:
       #
       #   ctrl char         before    after
       #   null              "ab\0c"    "abc"
@@ -52,17 +52,19 @@ module ShellTest
       #   form feed         "ab\fc"    "ab\n  c"
       #   carraige return   "ab\rc"    "c"
       #
-      # Also trims a string at the last match of regexp, if given.
-      #
-      #   reformat("abc\n$ ", /\$\ /)  # => "abc\n"
-      #
-      def reformat(str, regexp=nil)
-        tail = regexp ? str.scan(regexp).last : nil
-        str  = str.chomp tail
-        str.gsub!(/^.*?\r/, '')
+      def escape_non_printable_chars(str, regexp=nil)
+        str = str.gsub(/^.*?\r/, '')
         str.gsub!(/(\A#{"\b"}|.#{"\b"}|#{"\a"}|#{"\0"})/m, '')
-        str.gsub!(/(^.*?)\f/) {|match| "#{$1}\n#{' ' * $1.length}" }
+        str.gsub!(/(^.*?)\f/) { "#{$1}\n#{' ' * $1.length}" }
         str
+      end
+
+      # Trims a string at the last match of regexp, if given.
+      #
+      #   trim("abc\n$ ", /\$\ /)  # => "abc\n"
+      #
+      def trim(str, regexp=nil)
+        str.chomp(regexp ? str.scan(regexp).last : nil)
       end
     end
   end

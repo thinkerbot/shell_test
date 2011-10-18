@@ -221,6 +221,16 @@ module ShellTest
 =========================================================
 }) % [shell, timer.elapsed_time, result]
       end
+
+      private
+
+      # helper to make session output more useful to debugging eyes
+      # * trim the prompt of the end, if present
+      # * make non-printable chars visible
+      def reformat(str, regexp)
+        str = trim(str, regexp)
+        escape_non_printable_chars(str)
+      end
     end
   end
 end

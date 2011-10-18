@@ -16,68 +16,79 @@ class UtilsTest < Test::Unit::TestCase
   end
 
   #
-  # reformat test
+  # escape_non_printable_chars test
   #
 
-  def test_reformat_documentation
-    assert_equal "abc",     reformat("ab\0c")
-    assert_equal "abc",     reformat("ab\ac")
-    assert_equal "ac",      reformat("ab\bc")
-    assert_equal "ab\tc",   reformat("ab\tc")
-    assert_equal "ab\nc",   reformat("ab\nc")
-    assert_equal "ab\n  c", reformat("ab\fc")
-    assert_equal "c",       reformat("ab\rc")
-    assert_equal "abc\n",   reformat("abc\n$ ", /\$\ /)
+  def test_escape_non_printable_chars_documentation
+    assert_equal "abc",     escape_non_printable_chars("ab\0c")
+    assert_equal "abc",     escape_non_printable_chars("ab\ac")
+    assert_equal "ac",      escape_non_printable_chars("ab\bc")
+    assert_equal "ab\tc",   escape_non_printable_chars("ab\tc")
+    assert_equal "ab\nc",   escape_non_printable_chars("ab\nc")
+    assert_equal "ab\n  c", escape_non_printable_chars("ab\fc")
+    assert_equal "c",       escape_non_printable_chars("ab\rc")
   end
 
-  def test_reformat_trims_a_string_at_the_last_match_of_regexp
-    assert_equal "abc", reformat("abcxyz", /\w{3}/)
-    assert_equal "abc", reformat("abc", /xyz/)
+  def test_escape_non_printable_chars_removes_null_char
+    assert_equal "ac", escape_non_printable_chars("\0ac")
+    assert_equal "ac", escape_non_printable_chars("a\0c")
+    assert_equal "ac", escape_non_printable_chars("ac\0")
   end
 
-  def test_reformat_removes_null_char
-    assert_equal "ac", reformat("\0ac")
-    assert_equal "ac", reformat("a\0c")
-    assert_equal "ac", reformat("ac\0")
+  def test_escape_non_printable_chars_removes_bell_char
+    assert_equal "ac", escape_non_printable_chars("\aac")
+    assert_equal "ac", escape_non_printable_chars("a\ac")
+    assert_equal "ac", escape_non_printable_chars("ac\a")
   end
 
-  def test_reformat_removes_bell_char
-    assert_equal "ac", reformat("\aac")
-    assert_equal "ac", reformat("a\ac")
-    assert_equal "ac", reformat("ac\a")
+  def test_escape_non_printable_chars_removes_backspace_and_previous_char
+    assert_equal "ac", escape_non_printable_chars("\bac")
+    assert_equal "c",  escape_non_printable_chars("a\bc")
+    assert_equal "a",  escape_non_printable_chars("ac\b")
   end
 
-  def test_reformat_removes_backspace_and_previous_char
-    assert_equal "ac", reformat("\bac")
-    assert_equal "c",  reformat("a\bc")
-    assert_equal "a",  reformat("ac\b")
+  def test_escape_non_printable_chars_preserves_tab
+    assert_equal "\tac", escape_non_printable_chars("\tac")
+    assert_equal "a\tc", escape_non_printable_chars("a\tc")
+    assert_equal "ac\t", escape_non_printable_chars("ac\t")
   end
 
-  def test_reformat_preserves_tab
-    assert_equal "\tac", reformat("\tac")
-    assert_equal "a\tc", reformat("a\tc")
-    assert_equal "ac\t", reformat("ac\t")
+  def test_escape_non_printable_chars_preserves_newline
+    assert_equal "\nac", escape_non_printable_chars("\nac")
+    assert_equal "a\nc", escape_non_printable_chars("a\nc")
+    assert_equal "ac\n", escape_non_printable_chars("ac\n")
   end
 
-  def test_reformat_preserves_newline
-    assert_equal "\nac", reformat("\nac")
-    assert_equal "a\nc", reformat("a\nc")
-    assert_equal "ac\n", reformat("ac\n")
+  def test_escape_non_printable_chars_adds_ff_chars
+    assert_equal "\nac",   escape_non_printable_chars("\fac")
+    assert_equal "a\n c",  escape_non_printable_chars("a\fc")
+    assert_equal "ac\n  ", escape_non_printable_chars("ac\f")
   end
 
-  def test_reformat_adds_ff_chars
-    assert_equal "\nac",   reformat("\fac")
-    assert_equal "a\n c",  reformat("a\fc")
-    assert_equal "ac\n  ", reformat("ac\f")
+  def test_escape_non_printable_chars_removes_carriage_returns_back_to_newline
+    assert_equal "ac", escape_non_printable_chars("\rac")
+    assert_equal "c",  escape_non_printable_chars("a\rc")
+    assert_equal "",   escape_non_printable_chars("ac\r")
+
+    assert_equal "ab\nxy", escape_non_printable_chars("ab\n\rxy")
+    assert_equal "ab\ny",  escape_non_printable_chars("ab\nx\ry")
+    assert_equal "ab\n",   escape_non_printable_chars("ab\nxy\r")
   end
 
-  def test_reformat_removes_carriage_returns_back_to_newline
-    assert_equal "ac", reformat("\rac")
-    assert_equal "c",  reformat("a\rc")
-    assert_equal "",   reformat("ac\r")
+  #
+  # trim test
+  #
 
-    assert_equal "ab\nxy", reformat("ab\n\rxy")
-    assert_equal "ab\ny",  reformat("ab\nx\ry")
-    assert_equal "ab\n",   reformat("ab\nxy\r")
+  def test_trim_documentation
+    assert_equal "abc\n", trim("abc\n$ ", /\$\ /)
+  end
+
+  def test_trim_trims_a_string_at_the_last_match_of_regexp
+    assert_equal "abc", trim("abcxyz", /\w{3}/)
+    assert_equal "abc", trim("abc", /xyz/)
+  end
+
+  def test_trim_does_nothing_if_regexp_is_nil
+    assert_equal "abcxyz", trim("abcxyz", nil)
   end
 end
