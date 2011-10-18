@@ -30,7 +30,7 @@ module ShellTest
     def _assert_script(script, options={})
       pty = _pty(script, options) do |session, expected, actual|
         _assert_str_equal expected, actual do
-          session.status %Q{
+          session.summary %Q{
 %s (%.2fs)
 =========================================================
 %s
@@ -55,7 +55,7 @@ module ShellTest
     def _assert_script_match(script, options={})
       pty = _pty(script, options) do |session, expected, actual|
         _assert_str_match expected, actual do
-          session.status %Q{
+          session.summary %Q{
 %s (%.2fs)
 =========================================================
 %s

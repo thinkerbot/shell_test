@@ -185,7 +185,7 @@ module ShellTest
 
             rescue Agent::ReadError
               log << $!.buffer
-              $!.message << "\n#{status}"
+              $!.message << "\n#{summary}"
               raise
             end
 
@@ -211,7 +211,7 @@ module ShellTest
       # Formats the status of self into a string. A format string can be
       # provided - it is evaluated using '%' using arguments: [shell,
       # elapsed_time, result]
-      def status(format=nil)
+      def summary(format=nil)
         (format || %Q{
 %s (%.2fs)
 =========================================================

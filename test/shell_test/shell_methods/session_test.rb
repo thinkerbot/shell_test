@@ -1,7 +1,11 @@
 require File.expand_path("../../../test_helper", __FILE__)
 require "shell_test/shell_methods/session"
+require "shell_test/string_methods"
 
 class SessionTest < Test::Unit::TestCase
+  include ShellTest::StringMethods
+
+  Agent = ShellTest::ShellMethods::Agent
   Session = ShellTest::ShellMethods::Session
 
   attr_accessor :session
@@ -98,5 +102,22 @@ abc
 
     assert_equal "% echo ab\\\n: c\nabc\n% exit\n", session.run.result
     assert_equal 0, session.agent_status.exitstatus
+  end
+
+  def test_run_adds_session_summary_to_agent_errors
+    session = Session.new :max_run_time => 0.2
+    session.parse "$ echo 'abc'; sleep 1\n"
+
+    err = assert_raises(Agent::ReadError) { session.run }
+    assert_str_match %q{
+      timeout waiting for /\$\ /
+
+      /bin/sh (0.:...:s)
+      =========================================================
+      $ echo 'abc'; sleep 1
+      abc
+      
+      =========================================================
+    }, err.message
   end
 end
