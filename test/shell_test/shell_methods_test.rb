@@ -132,11 +132,22 @@ class ShellMethodsTest < Test::Unit::TestCase
       xyz
     }
   end
-  def test_exit_status
+
+  def test_assert_script_tests_exit_status
     assert_script %{
       $ false
     }, :exitstatus => 1
   end
+
+  def test_assert_script_times_out_for_unexited_scripts
+    err = assert_raises(Agent::ReadError) do
+      assert_script %{
+        $ 
+      }, :noexit => true, :max_run_time => 0.2
+    end
+    assert_match(/timeout waiting for EOF/, err.message)
+  end
+
   def test_assert_script_for_example_cut_from_terminal
     parent_dir = __FILE__.chomp('.rb')
     dir = File.join(parent_dir, __name__)
