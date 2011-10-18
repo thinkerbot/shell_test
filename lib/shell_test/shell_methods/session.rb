@@ -153,21 +153,19 @@ module ShellTest
 
             begin
               if stty
-                # Use a partial_len > 1 as a minor optimization.  There is no
-                # need to be precise (ultimately it's for readpartial).
-                agent.expect(@ps1r, 1, 32)
+                agent.expect(@ps1r, 1)
                 agent.write "stty #{stty}\n"
 
                 # Expect ps1 a second time to clear the stty echo from the
                 # slave. Note ps1 + \n is more reliable than expecting the
                 # newline at the end of the stty.
-                agent.expect(@ps1r, 1, 32)
+                agent.expect(@ps1r, 1)
                 agent.write "\n"
               end
 
               timeout  = nil
               steps.each do |prompt, input, max_run_time, callback|
-                buffer = agent.expect(prompt, timeout, 1)
+                buffer = agent.expect(prompt, timeout)
 
                 if prompt
                   log << buffer

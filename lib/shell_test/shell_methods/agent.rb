@@ -29,56 +29,42 @@ module ShellTest
       # string within the timeout then expect raises an UnsatisfiedError. An
       # UnsatisfiedError will be also be raised if the slave eof is reached
       # before the regexp matches.
-      #
-      # ==== Partial Length
-      #
-      # Expect reads from slave and checks the regexp in a loop.  The amount
-      # of data read in any given loop is determined by partial_len. A larger
-      # partial_len may be specified to speed up expect if the regexp matches
-      # where the slave runs out of data, for example at prompts.
-      #
-      # Note that used inappropriately this optimization may result in more
-      # data being read from the slave than is necessary to match the regexp.
-      def expect(regexp, timeout=nil, partial_len=1)
+      def expect(regexp, timeout=nil)
         timer.timeout = timeout
 
         buffer = ''
         while true
-          # This voodoo helps prevent timeouts for some reason... perhaps to
-          # minimize the chance of scheduling between calculation and select?
-          timeout = timer.timeout
 
-          unless IO.select([slave],nil,nil,timeout)
-            msg = "timeout waiting for %s" % [regexp ? regexp.inspect : 'EOF']
+          # Use read+select instead of read_nonblock to avoid polling in a
+          # tight loop.  Don't bother with readpartial and partial lengths.
+          # It is an optimization, especially because the regexp matches
+          # each loop, but unlikely to be necessary in test scenarios (ie
+          # this is not mean to be a general solution).
+          unless IO.select([slave],nil,nil,timer.timeout)
+            msg = "timeout waiting for #{regexp ? regexp.inspect : 'EOF'}"
             raise UnsatisfiedError.new(msg, buffer)
           end
 
           begin
-            if regexp.nil? && slave.eof?
-              break
-            end
-
-            # Use readpartial instead of read because it will not block if the
-            # length is not fully available.
-            #
-            # Use readpartial+select instead of read_nonblock to avoid polling
-            # in a tight loop.
-            #
-            # Use readpartial instead of getc to allow larger partial lengths.
-            begin
-              buffer << slave.readpartial(partial_len)
-            rescue EOFError
-              raise UnsatisfiedError.new($!.message, buffer)
-            end
-
+            c = slave.read(1)
           rescue Errno::EIO
             # On some linux (ex ubuntu) read can return an eof or fail with
             # an EIO error when a terminal disconnect occurs and an EIO
             # condition occurs - the exact behavior is unspecified but the
             # meaning is the same... no more data is available, so break.
-            break
+            c = nil
           end
-            
+
+          if c.nil?
+            if regexp.nil?
+              break
+            else
+              raise UnsatisfiedError.new("end of file reached", buffer)
+            end
+          end
+
+          buffer << c
+
           if regexp && buffer =~ regexp
             break
           end

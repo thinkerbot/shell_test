@@ -90,11 +90,6 @@ class AgentTest < Test::Unit::TestCase
     assert err.buffer =~ /\.+/
   end
 
-  def test_expect_read_in_chunks_of_partial_len
-    agent.master << "abcxyz"
-    assert_equal "abcxy", agent.expect(/x/, 0.1, 5)
-  end
-
   def test_expect_reads_to_eof_for_nil_regexp
     agent.master << "abcxyz"
     agent.master.close
