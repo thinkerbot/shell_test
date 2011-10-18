@@ -44,7 +44,7 @@ module ShellTest
       end
 
       if status = options[:exitstatus]
-        assert_equal(status, pty.agent_status.exitstatus)
+        assert_equal(status, pty.status.exitstatus)
       end
     end
 
@@ -69,7 +69,7 @@ module ShellTest
       end
 
       if status = options[:exitstatus]
-        assert_equal(status, pty.agent_status.exitstatus)
+        assert_equal(status, pty.status.exitstatus)
       end
     end
   end

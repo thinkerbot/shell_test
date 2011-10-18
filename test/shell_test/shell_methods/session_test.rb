@@ -82,7 +82,7 @@ abc
     session.on(/\$\ /, "exit 8\n")
 
     assert_equal "$ echo hello world\nhello world\n$ exit 8\n", session.run.result
-    assert_equal 8, session.agent_status.exitstatus
+    assert_equal 8, session.status.exitstatus
   end
 
   def test_run_for_multiline_commands
@@ -91,7 +91,7 @@ abc
     session.on(/\$\ /, "exit\n")
 
     assert_equal "$ echo ab\\\n> c\nabc\n$ exit\n", session.run.result
-    assert_equal 0, session.agent_status.exitstatus
+    assert_equal 0, session.status.exitstatus
   end
 
   def test_run_with_different_ps1_and_ps2
@@ -101,7 +101,7 @@ abc
     session.on(/\% /, "exit\n")
 
     assert_equal "% echo ab\\\n: c\nabc\n% exit\n", session.run.result
-    assert_equal 0, session.agent_status.exitstatus
+    assert_equal 0, session.status.exitstatus
   end
 
   def test_run_adds_session_summary_to_agent_errors
