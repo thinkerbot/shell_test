@@ -109,10 +109,10 @@ abc
     session.parse "$ echo 'abc'; sleep 1\n"
 
     err = assert_raises(Agent::ReadError) { session.run }
-    assert_str_match %q{
-      timeout waiting for /\$\ /
+    assert_str_match %Q{
+      timeout waiting for /\\$\\ /
 
-      /bin/sh (0.:...:s)
+      #{session.shell} (0.:...:s)
       =========================================================
       $ echo 'abc'; sleep 1
       abc
