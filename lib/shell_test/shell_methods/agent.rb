@@ -26,9 +26,9 @@ module ShellTest
       # the slave eof.
       #
       # A timeout may be given. If the slave doesn't produce the expected
-      # string within the timeout then expect raises an ExpectError. An
-      # ExpectError will be also be raised if the slave eof is reached before
-      # the regexp matches.
+      # string within the timeout then expect raises a ReadError. A ReadError
+      # will be also be raised if the slave eof is reached before the regexp
+      # matches.
       def expect(regexp, timeout=nil)
         timer.timeout = timeout
 
@@ -42,7 +42,7 @@ module ShellTest
           # this is not mean to be a general solution).
           unless IO.select([slave],nil,nil,timer.timeout)
             msg = "timeout waiting for #{regexp ? regexp.inspect : 'EOF'}"
-            raise ExpectError.new(msg, buffer)
+            raise ReadError.new(msg, buffer)
           end
 
           begin
@@ -59,7 +59,7 @@ module ShellTest
             if regexp.nil?
               break
             else
-              raise ExpectError.new("end of file reached", buffer)
+              raise ReadError.new("end of file reached", buffer)
             end
           end
 
@@ -72,7 +72,7 @@ module ShellTest
         buffer
       end
 
-      # Read to the end of the slave.  Raises a ExpectError if the slave eof is
+      # Read to the end of the slave.  Raises a ReadError if the slave eof is
       # not reached within the timeout.
       def read(timeout=nil)
         expect nil, timeout
@@ -101,7 +101,7 @@ module ShellTest
       class WriteError < RuntimeError
       end
 
-      class ExpectError < RuntimeError
+      class ReadError < RuntimeError
         attr_reader :buffer
 
         def initialize(message, buffer)

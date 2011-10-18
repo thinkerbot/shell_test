@@ -121,7 +121,7 @@ EOF, which works almost all the time. Occasionally the shell will not provide an
 EOF on the pty slave and as a result the test will time-out with an error:
 
   test_assert_script_match_matches_regexps_to_output(ShellMethodsTest):
-  ShellTest::ShellMethods::Agent::ExpectError: timeout waiting for EOF
+  ShellTest::ShellMethods::Agent::ReadError: timeout waiting for EOF
   
   /bin/sh (1.0s)
   =========================================================

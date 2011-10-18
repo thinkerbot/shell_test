@@ -183,7 +183,7 @@ module ShellTest
                 timeout = max_run_time
               end
 
-            rescue Agent::ExpectError
+            rescue Agent::ReadError
               log << $!.buffer
               $!.message << "\n#{status}"
               raise
