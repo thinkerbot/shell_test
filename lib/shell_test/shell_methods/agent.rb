@@ -2,17 +2,22 @@ require 'shell_test/shell_methods/timer'
 
 module ShellTest
   module ShellMethods
+    # Agent wraps a PTY master-slave pair and provides methods for doing reads
+    # and writes. The expect method is inspired by the IO.expect method in the
+    # stdlib, but tailored to allow for better timeout control.
     class Agent
+
       # The pty master
       attr_reader :master
 
       # The pty slave
       attr_reader :slave
 
-      # The timer managing timeouts.  The timer ensures that the timeouts used
-      # by expect are never negative, or nil to indicate no timeout.  Timeouts
-      # are set on the timer using `timer.timeout=` and retrieved via
-      # `timer.timeout`.
+      # The timer managing read timeouts.  The timer ensures that the timeouts
+      # used by expect are never negative, or nil to indicate no timeout.
+      #
+      # If implementing a custom timer, note that timeouts are set on the
+      # timer using `timer.timeout=` and retrieved via `timer.timeout`.
       attr_reader :timer
 
       def initialize(master, slave, attrs={})
@@ -36,10 +41,11 @@ module ShellTest
         while true
 
           # Use read+select instead of read_nonblock to avoid polling in a
-          # tight loop.  Don't bother with readpartial and partial lengths.
-          # It is an optimization, especially because the regexp matches
-          # each loop, but unlikely to be necessary in test scenarios (ie
-          # this is not mean to be a general solution).
+          # tight loop.  Don't bother with readpartial and partial lengths. It
+          # is an optimization, especially because the regexp matches each
+          # loop, but adds complexity because expect could read past the end
+          # of the regexp in some cases and it is unlikely to be necessary in
+          # test scenarios (ie this is not mean to be a general solution).
           unless IO.select([slave],nil,nil,timer.timeout)
             msg = "timeout waiting for #{regexp ? regexp.inspect : 'EOF'}"
             raise ReadError.new(msg, buffer)
@@ -98,10 +104,13 @@ module ShellTest
         end
       end
 
+      # Raised when Agent writes timeout.
       class WriteError < RuntimeError
       end
 
+      # Raised when Agent reads fail or timeout.
       class ReadError < RuntimeError
+        # The buffer containing whatever had been read at the time of error.
         attr_reader :buffer
 
         def initialize(message, buffer)
