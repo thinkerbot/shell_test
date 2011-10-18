@@ -69,7 +69,7 @@ class AgentTest < Test::Unit::TestCase
     agent.master << "abc"
     err = assert_raises(Agent::ReadError) { agent.expect(/x/, 0.1) }
 
-    assert_equal "timeout waiting for /x/", err.message
+    assert_match(/timeout waiting for \/x\//, err.message)
     assert_equal "abc", err.buffer
   end
 
@@ -86,7 +86,7 @@ class AgentTest < Test::Unit::TestCase
       agent.expect(/x/, 0.3)
     end
 
-    assert_equal "timeout waiting for /x/", err.message
+    assert_match(/timeout waiting for \/x\//, err.message)
     assert err.buffer =~ /\.+/
   end
 
@@ -119,7 +119,7 @@ class AgentTest < Test::Unit::TestCase
     agent.master << "abc"
     err = assert_raises(Agent::ReadError) { agent.read(0.1) }
 
-    assert_equal "timeout waiting for EOF", err.message
+    assert_match(/timeout waiting for EOF/, err.message)
     assert_equal "abc", err.buffer
   end
 

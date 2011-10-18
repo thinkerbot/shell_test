@@ -39,6 +39,7 @@ module ShellTest
 
         buffer = ''
         while true
+          timeout = timer.timeout
 
           # Use read+select instead of read_nonblock to avoid polling in a
           # tight loop.  Don't bother with readpartial and partial lengths. It
@@ -46,8 +47,8 @@ module ShellTest
           # loop, but adds complexity because expect could read past the end
           # of the regexp in some cases and it is unlikely to be necessary in
           # test scenarios (ie this is not mean to be a general solution).
-          unless IO.select([slave],nil,nil,timer.timeout)
-            msg = "timeout waiting for #{regexp ? regexp.inspect : 'EOF'}"
+          unless IO.select([slave],nil,nil,timeout)
+            msg = "timeout waiting for %s (%.2fs)" % [regexp ? regexp.inspect : 'EOF', timeout]
             raise ReadError.new(msg, buffer)
           end
 
