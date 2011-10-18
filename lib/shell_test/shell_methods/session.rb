@@ -143,58 +143,72 @@ module ShellTest
         end
       end
 
-      def run
-        log.clear
-
+      # Spawns a PTY shell session and yields an Agent to the block.  The
+      # session is logged to log and the final exit status set into status
+      # (any previous values are overwritten).
+      #
+      # ==== ENV variables
+      #
+      # PS1 and PS2 are set into ENV for the duration of the block and so in
+      # most cases the shell inherits those values.  Keep in mind, however,
+      # that the shell config scripts can set these variables and on some
+      # distributions (ex SLES 10) the config script do not respect prior
+      # values.
+      def spawn
         with_env('PS1' => ps1, 'PS2' => ps2) do
-          @status = spawn(shell) do |master, slave|
+          @log = []
+          @status = super(shell) do |master, slave|
             agent = Agent.new(master, slave, :timer => timer)
             timer.start(max_run_time)
 
             begin
-              if stty
-                agent.expect(@ps1r, 1)
-                agent.write "stty #{stty}\n"
-
-                # Expect ps1 a second time to clear the stty echo from the
-                # slave. Note ps1 + \n is more reliable than expecting the
-                # newline at the end of the stty.
-                agent.expect(@ps1r, 1)
-                agent.write "\n"
-              end
-
-              timeout  = nil
-              steps.each do |prompt, input, max_run_time, callback|
-                buffer = agent.expect(prompt, timeout)
-
-                if prompt
-                  log << buffer
-                end
-
-                if callback
-                  callback.call buffer
-                end
-
-                if input
-                  log << input
-                  agent.write(input)
-                end
-
-                timeout = max_run_time
-              end
-
+              yield agent
             rescue Agent::ReadError
               log << $!.buffer
               $!.message << "\n#{summary}"
               raise
             end
 
-            agent.close
             timer.stop
+            agent.close
           end
         end
-
         self
+      end
+
+      def run
+        spawn do |agent|
+          if stty
+            agent.expect(@ps1r, 1)
+            agent.write "stty #{stty}\n"
+
+            # Expect ps1 a second time to clear the stty echo from the
+            # slave. Note ps1 + \n is more reliable than expecting the
+            # newline at the end of the stty.
+            agent.expect(@ps1r, 1)
+            agent.write "\n"
+          end
+
+          timeout  = nil
+          steps.each do |prompt, input, max_run_time, callback|
+            buffer = agent.expect(prompt, timeout)
+
+            if prompt
+              log << buffer
+            end
+
+            if callback
+              callback.call buffer
+            end
+
+            if input
+              log << input
+              agent.write(input)
+            end
+
+            timeout = max_run_time
+          end
+        end
       end
 
       # Returns what would appear to the user at the current point in the
