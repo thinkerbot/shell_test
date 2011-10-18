@@ -113,30 +113,6 @@ file, then the directory for the test case would be
     end
   end
 
-== Known Issues
-
-ShellTest uses a pseudoterminal (pty) to execute shell commands and capture
-output. Typically tests are constructed to exit the pty shell and wait for an
-EOF, which works almost all the time. Occasionally the shell will not provide an
-EOF on the pty slave and as a result the test will time-out with an error:
-
-  test_assert_script_match_matches_regexps_to_output(ShellMethodsTest):
-  ShellTest::ShellMethods::Agent::ReadError: timeout waiting for EOF
-  
-  /bin/sh (1.0s)
-  =========================================================
-  $ echo "goodnight
-  > moon"
-  goodnight
-  moon
-  $ exit $?
-  exit
-  
-  =========================================================
-
-Clearly the shell is signaling exit, but no EOF is found. This unfortunate error
-crops up rarely, but apparently at random, and for apparently random tests.
-
 == Installation
 
 ShellTest is available as a gem[http://rubygems.org/gems/shell_test].
