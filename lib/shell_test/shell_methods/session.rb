@@ -38,7 +38,7 @@ module ShellTest
         @ps1r    = /#{Regexp.escape(ps1)}/
         @ps2r    = /#{Regexp.escape(ps2)}/
         @promptr = /(#{@ps1r}|#{@ps2r}|\{\{(.*?)\}\})/
-        @steps   = [[nil, nil, nil, nil]]
+        @steps   = []
         @log     = []
         @status  = nil
       end
@@ -47,11 +47,7 @@ module ShellTest
         if prompt.nil? && !input.nil?
           raise "cannot provide input without a prompt: #{input.inspect}"
         end
-        last = steps.last
-        last[0] = prompt
-        last[1] = input
-        last[2] = max_run_time
-        steps << [nil, nil, nil, callback]
+        steps << [prompt, input, max_run_time, callback]
         self
       end
 
@@ -119,13 +115,19 @@ module ShellTest
           args.concat [@ps1r, "exit $?\n", nil, nil]
         end
 
+        callback = nil
         while !args.empty?
           prompt = args.shift
           input  = args.shift
           max_run_time = args.shift
           output = args.shift
-          callback = validator(output, args.first, &block)
+
           on(prompt, input, max_run_time, &callback)
+          callback = validator(output, args.first, &block)
+        end
+
+        if callback
+          on(nil, nil, nil, &callback)
         end
 
         self
@@ -191,7 +193,7 @@ module ShellTest
             end
 
             timer.stop
-            agent.close
+            # note the absence of agent.close... rely on wait
           end
         end
         self
