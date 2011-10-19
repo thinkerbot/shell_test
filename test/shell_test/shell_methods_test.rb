@@ -1,5 +1,6 @@
 require File.expand_path('../../test_helper', __FILE__)
 require 'shell_test/shell_methods'
+require 'fileutils'
 
 class ShellMethodsTest < Test::Unit::TestCase
   include ShellTest::ShellMethods
