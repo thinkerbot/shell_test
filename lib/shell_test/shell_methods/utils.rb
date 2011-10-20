@@ -52,7 +52,7 @@ module ShellTest
       #   form feed         "ab\fc"    "ab\n  c"
       #   carraige return   "ab\rc"    "c"
       #
-      def escape_non_printable_chars(str, regexp=nil)
+      def escape_non_printable_chars(str)
         str = str.gsub(/^.*?\r/, '')
         str.gsub!(/(\A#{"\b"}|.#{"\b"}|#{"\a"}|#{"\0"})/m, '')
         str.gsub!(/(^.*?)\f/) { "#{$1}\n#{' ' * $1.length}" }
