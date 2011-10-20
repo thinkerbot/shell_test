@@ -74,21 +74,4 @@ class UtilsTest < Test::Unit::TestCase
     assert_equal "ab\ny",  escape_non_printable_chars("ab\nx\ry")
     assert_equal "ab\n",   escape_non_printable_chars("ab\nxy\r")
   end
-
-  #
-  # trim test
-  #
-
-  def test_trim_documentation
-    assert_equal "abc\n", trim("abc\n$ ", /\$\ /)
-  end
-
-  def test_trim_trims_a_string_at_the_last_match_of_regexp
-    assert_equal "abc", trim("abcxyz", /\w{3}/)
-    assert_equal "abc", trim("abc", /xyz/)
-  end
-
-  def test_trim_does_nothing_if_regexp_is_nil
-    assert_equal "abcxyz", trim("abcxyz", nil)
-  end
 end

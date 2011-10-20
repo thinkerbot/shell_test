@@ -58,14 +58,6 @@ module ShellTest
         str.gsub!(/(^.*?)\f/) { "#{$1}\n#{' ' * $1.length}" }
         str
       end
-
-      # Trims a string at the last match of regexp, if given.
-      #
-      #   trim("abc\n$ ", /\$\ /)  # => "abc\n"
-      #
-      def trim(str, regexp=nil)
-        str.chomp(regexp ? str.scan(regexp).last : nil)
-      end
     end
   end
 end

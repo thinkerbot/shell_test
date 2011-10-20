@@ -123,7 +123,7 @@ module ShellTest
           output = args.shift
 
           on(prompt, input, max_run_time, &callback)
-          callback = validator(output, args.first, &block)
+          callback = validator(output, &block)
         end
 
         if callback
@@ -133,15 +133,18 @@ module ShellTest
         self
       end
 
-      def validator(output, next_prompt)
-        return nil unless output && block_given?
-        lambda do |actual|
-          if visual
-            output = reformat(output, next_prompt)
-            actual = reformat(actual, next_prompt)
-          end
+      def validator(output)
+        if output && block_given?
+          lambda do |actual|
+            if visual
+              output = escape_non_printable_chars(output)
+              actual = escape_non_printable_chars(actual)
+            end
 
-          yield(self, output, actual)
+            yield(self, output, actual)
+          end
+        else
+          nil
         end
       end
 
@@ -258,16 +261,6 @@ module ShellTest
 %s
 =========================================================
 }) % [shell, timer.elapsed_time, max_run_time, result]
-      end
-
-      private
-
-      # helper to make session output more useful to debugging eyes
-      # * trim the prompt of the end, if present
-      # * make non-printable chars visible
-      def reformat(str, regexp)
-        str = trim(str, regexp)
-        escape_non_printable_chars(str)
       end
     end
   end
