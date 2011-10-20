@@ -120,4 +120,24 @@ abc
       =========================================================
     }, err.message
   end
+
+  def test_run_fails_with_invalid_stty
+    session = Session.new(:stty => '-invalid')
+    session.on(/\$ /, "exit\n")
+
+    err = assert_raises(RuntimeError) { session.run }
+    assert_str_match %Q{
+      stty failure
+
+      #{session.shell} (elapsed: :...:s max: :...:s)
+      =========================================================
+      $ stty -invalid\r
+      stty: illegal option -- -invalid\r
+      usage: stty :...:\r
+      $ echo $?\r
+      1\r
+      $ 
+      =========================================================
+    }, err.message
+  end
 end

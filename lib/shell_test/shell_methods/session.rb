@@ -195,14 +195,18 @@ module ShellTest
       def run
         spawn do |agent|
           if stty
-            agent.expect(@ps1r, 1)
+            log << agent.expect(@ps1r, 1)
             agent.write "stty #{stty}\n"
-
-            # Expect ps1 a second time to clear the stty echo from the slave.
-            # Note ps1 + \n is more reliable than expecting the newline at the
-            # end of the stty (race condition: echo of the stty vs echo off)
-            agent.expect(@ps1r, 1)
+            log << agent.expect(@ps1r, 1)
+            agent.write "echo $?\n"
+            log << agent.expect(@ps1r, 1)
             agent.write "\n"
+
+            unless log.last == "0\n#{ps1}"
+              raise "stty failure\n#{summary}"
+            end
+
+            log.clear
           end
 
           timeout  = nil
