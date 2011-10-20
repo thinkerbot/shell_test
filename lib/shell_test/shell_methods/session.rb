@@ -209,9 +209,9 @@ module ShellTest
             agent.expect(@ps1r, 1)
             agent.write "stty #{stty}\n"
 
-            # Expect ps1 a second time to clear the stty echo from the
-            # slave. Note ps1 + \n is more reliable than expecting the
-            # newline at the end of the stty.
+            # Expect ps1 a second time to clear the stty echo from the slave.
+            # Note ps1 + \n is more reliable than expecting the newline at the
+            # end of the stty (race condition: echo of the stty vs echo off)
             agent.expect(@ps1r, 1)
             agent.write "\n"
           end
