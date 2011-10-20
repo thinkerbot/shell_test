@@ -149,6 +149,23 @@ class ShellMethodsTest < Test::Unit::TestCase
     assert_match(/timeout waiting for EOF/, err.message)
   end
 
+  def test_assert_script_respects_timeout_specified_for_last_command
+    err = assert_raises(Agent::ReadError) do
+      assert_script %{
+        $ sleep 0.5; exit # [0.1]
+      }, :noexit => true
+    end
+    assert_str_match %q{
+      timeout waiting for EOF (0.:...:s)
+
+      /bin/sh (0.:...:s)
+      =========================================================
+      $ sleep 0.5; exit 
+      
+      =========================================================
+    }, err.message
+  end
+
   def test_assert_script_for_example_cut_from_terminal
     parent_dir = __FILE__.chomp('.rb')
     dir = File.join(parent_dir, __name__)
