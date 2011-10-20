@@ -99,7 +99,7 @@ module ShellTest
       #   $ echo abc
       #   abc
       #   }
-      #   session.run.result   # => "$ echo abc\nabc\n$ exit $?\nexit\n"
+      #   session.run.result   # => "$ echo abc\nabc\n$ exit\n"
       #
       # Steps are registered with a callback block, if given, to recieve the
       # expected and actual outputs during run.  Normally the callback is used
