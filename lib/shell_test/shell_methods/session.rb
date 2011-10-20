@@ -157,26 +157,23 @@ module ShellTest
       # distributions (ex SLES 10) the config script do not respect prior
       # values.
       #
-      # ==== Exit and Expect
+      # ==== Exit and Read
       #
       # Calling exit on a shell session allows the shell to communicate out an
-      # exit status and to gracefully clean up.  This is a common motif:
+      # exit status and to gracefully clean up.  Furthermore a session is
+      # forced timeout if no explicit exit route is specified, so this is
+      # good:
       #
-      #   agent.write "exit $?\n"
+      #   agent.write "exit\n"
       #
       # However, beware the temptation to read beyond an exit - the behavior
       # of shell sessions after an exit varies dramatically from system to
-      # system, and occasionally suffers from race conditions.  Don't do this:
+      # system, and occasionally suffers from race conditions.
       #
-      #   agent.write "exit $?\n"
-      #   agent.read(timeout)       # nor agent.expect(nil, timeout)
+      #   agent.write "exit\n"
+      #   agent.read              # could be "exit", might not be...
       #
-      # On OS X (10.6.8) + 1.9.2 + bash this can cause intermittent timeouts
-      # waiting for the EOF, but more commonly returns "exit\n".  Ubuntu
-      # (11.04) + 1.8.7 + ksh does not timeout but instead reads nothing, or
-      # sometimes just a few characters like "exi". Save yourself. Write the
-      # exit, abandon further reads, and let spawn wait for the session to
-      # end.
+      # Save yourself. Write the exit and abandon further reads.
       def spawn
         with_env('PS1' => ps1, 'PS2' => ps2) do
           @log = []
@@ -186,6 +183,13 @@ module ShellTest
 
             begin
               yield agent
+
+              # read to eof which ensures timeout for unterminated sessions,
+              # and ends up expediting the termination of some shells (ex:
+              # without clearing the slave bash itself appears to time-out
+              # during wait, ~0.5s)
+              agent.read
+
             rescue Agent::ReadError
               log << $!.buffer
               $!.message << "\n#{summary}"
@@ -193,7 +197,7 @@ module ShellTest
             end
 
             timer.stop
-            # note the absence of agent.close... rely on wait
+            agent.close
           end
         end
         self
