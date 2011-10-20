@@ -153,12 +153,12 @@ class ShellMethodsTest < Test::Unit::TestCase
     err = assert_raises(Agent::ReadError) do
       assert_script %{
         $ sleep 0.5; exit # [0.1]
-      }, :noexit => true
+      }, :noexit => true, :max_run_time => 2
     end
     assert_str_match %q{
-      timeout waiting for EOF (0.:...:s)
+      timeout waiting for EOF after 0.:...:s
 
-      /bin/sh (0.:...:s)
+      /bin/sh (elapsed: 0.:...:s max: 2.00s)
       =========================================================
       $ sleep 0.5; exit 
       

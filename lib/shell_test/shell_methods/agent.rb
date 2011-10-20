@@ -48,7 +48,7 @@ module ShellTest
           # of the regexp in some cases and it is unlikely to be necessary in
           # test scenarios (ie this is not mean to be a general solution).
           unless IO.select([slave],nil,nil,timeout)
-            msg = "timeout waiting for %s (%.2fs)" % [regexp ? regexp.inspect : 'EOF', timeout]
+            msg = "timeout waiting for %s after %.2fs" % [regexp ? regexp.inspect : 'EOF', timeout]
             raise ReadError.new(msg, buffer)
           end
 

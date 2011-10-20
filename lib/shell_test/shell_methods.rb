@@ -31,7 +31,7 @@ module ShellTest
       pty = _pty(script, options) do |session, expected, actual|
         _assert_str_equal expected, actual do
           session.summary %Q{
-%s (%.2fs)
+%s (elapsed: %.2fs max: %.2fs)
 =========================================================
 %s
 -------------------- expected output --------------------
@@ -56,7 +56,7 @@ module ShellTest
       pty = _pty(script, options) do |session, expected, actual|
         _assert_str_match expected, actual do
           session.summary %Q{
-%s (%.2fs)
+%s (%.2f:%.2fs)
 =========================================================
 %s
 ----------------- expected output like ------------------

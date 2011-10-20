@@ -253,11 +253,11 @@ module ShellTest
       # elapsed_time, result]
       def summary(format=nil)
         (format || %Q{
-%s (%.2fs)
+%s (elapsed: %.2fs max: %.2fs)
 =========================================================
 %s
 =========================================================
-}) % [shell, timer.elapsed_time, result]
+}) % [shell, timer.elapsed_time, max_run_time, result]
       end
 
       private
