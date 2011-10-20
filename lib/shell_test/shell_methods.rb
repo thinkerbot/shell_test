@@ -29,6 +29,9 @@ module ShellTest
 
     def _assert_script(script, options={})
       pty = _pty(script, options) do |session, expected, actual|
+        expected = escape_non_printable_chars(expected)
+        actual = escape_non_printable_chars(actual)
+
         _assert_str_equal expected, actual do
           session.summary %Q{
 %s (elapsed: %.2fs max: %.2fs)
@@ -54,6 +57,9 @@ module ShellTest
 
     def _assert_script_match(script, options={})
       pty = _pty(script, options) do |session, expected, actual|
+        expected = escape_non_printable_chars(expected)
+        actual = escape_non_printable_chars(actual)
+
         _assert_str_match expected, actual do
           session.summary %Q{
 %s (%.2f:%.2fs)

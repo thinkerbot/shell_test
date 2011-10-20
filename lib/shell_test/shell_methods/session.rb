@@ -22,7 +22,6 @@ module ShellTest
       attr_reader :timer
       attr_reader :steps
       attr_reader :log
-      attr_reader :visual
       attr_reader :max_run_time
       attr_reader :status
 
@@ -32,7 +31,6 @@ module ShellTest
         @ps2   = options[:ps2] || DEFULAT_PS2
         @stty  = options[:stty] || '-echo -onlcr'
         @timer = options[:timer] || Timer.new
-        @visual  = options[:visual] || true
         @max_run_time = options[:max_run_time] || 1
 
         @ps1r    = /#{Regexp.escape(ps1)}/
@@ -123,7 +121,7 @@ module ShellTest
           output = args.shift
 
           on(prompt, input, max_run_time, &callback)
-          callback = validator(output, &block)
+          callback = make_callback(output, &block)
         end
 
         if callback
@@ -133,14 +131,9 @@ module ShellTest
         self
       end
 
-      def validator(output)
+      def make_callback(output)
         if output && block_given?
           lambda do |actual|
-            if visual
-              output = escape_non_printable_chars(output)
-              actual = escape_non_printable_chars(actual)
-            end
-
             yield(self, output, actual)
           end
         else
