@@ -29,6 +29,15 @@ module ShellTest
             # cleanup the pty on error
             Process.kill(9, pid)
 
+            # clearing the slave allows the wait to complete faster
+            while IO.select([slave],nil,nil,0.1)
+              begin
+                break unless slave.read(1)
+              rescue Errno::EIO
+                break
+              end
+            end
+
             # any wait can cause a ChildExited error so account for that here
             # - the $? is indeterminate in this case prior to 1.9.2
             Process.wait(pid) rescue PTY::ChildExited
