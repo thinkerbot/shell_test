@@ -7,41 +7,105 @@ module ShellTest
   module ShellMethods
     
     # Session is an engine for running shell sessions.
+    #
+    # ==== ENV variables
+    #
+    # PS1 and PS2 are set into ENV for the duration of the block and so in
+    # most cases the shell inherits those values.  Keep in mind, however,
+    # that the shell config scripts can set these variables and on some
+    # distributions (ex SLES 10) the config script do not respect prior
+    # values.
+    #
+    # ==== Exit and Read
+    #
+    # Calling exit on a shell session allows the shell to communicate out an
+    # exit status and to gracefully clean up.  Furthermore a session is
+    # forced timeout if no explicit exit route is specified, so this is
+    # good:
+    #
+    #   agent.write "exit\n"
+    #
+    # However, beware the temptation to read beyond an exit - the behavior
+    # of shell sessions after an exit varies dramatically from system to
+    # system, and occasionally suffers from race conditions.
+    #
+    #   agent.write "exit\n"
+    #   agent.read              # could be "exit", might not be...
+    #
+    # Save yourself. Write the exit and abandon further reads.
     class Session
       include EnvMethods
       include Utils
 
       DEFAULT_SHELL = '/bin/sh'
-      DEFAULT_PS1 = '$ '
-      DEFULAT_PS2 = '> '
+      DEFAULT_PS1   = '$ '
+      DEFAULT_PS2   = '> '
+      DEFAULT_STTY  = '-echo -onlcr'
+      DEFULAT_MAX_RUN_TIME = 1
 
+      # The session shell
       attr_reader :shell
+
+      # The shell PS1
       attr_reader :ps1
+
+      # The shell PS2
       attr_reader :ps2
+
+      # Aguments string passed stty on run
       attr_reader :stty
+
+      # The session timer
       attr_reader :timer
-      attr_reader :steps
-      attr_reader :log
+
+      # The maximum run time for the session
       attr_reader :max_run_time
+
+      # An array of entries like [prompt, input, max_run_time, callback] that
+      # indicate each step of a session.  See the on method for adding steps.
+      attr_reader :steps
+
+      # A log of the output at each step (set during run)
+      attr_reader :log
+
+      # A Process::Status for the session (set by run)
       attr_reader :status
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
-        @ps1   = options[:ps1] || DEFAULT_PS1
-        @ps2   = options[:ps2] || DEFULAT_PS2
-        @stty  = options[:stty] || '-echo -onlcr'
+        @ps1   = options[:ps1]   || DEFAULT_PS1
+        @ps2   = options[:ps2]   || DEFAULT_PS2
+        @stty  = options[:stty]  || DEFAULT_STTY
         @timer = options[:timer] || Timer.new
-        @max_run_time = options[:max_run_time] || 1
+        @max_run_time = options[:max_run_time] || DEFULAT_MAX_RUN_TIME
+        @steps   = []
+        @log     = []
+        @status  = nil
 
         @ps1r    = /#{Regexp.escape(ps1)}/
         @ps2r    = /#{Regexp.escape(ps2)}/
         @promptr = /(#{@ps1r}|#{@ps2r}|\{\{(.*?)\}\})/
-        @steps   = []
-        @log     = []
-        @status  = nil
       end
 
-      def on(prompt, input=nil, max_run_time=nil, &callback)
+      # Define a step.  At each step:
+      #
+      # 1. Output is read from the shell up to the prompt
+      # 2. The output passed to the callback (if given)
+      # 3. The input is written to the shell (if given)
+      #
+      # If the next prompt is not reached within max_run_time then a ReadError
+      # occurs.  Special input considerations:
+      #
+      # * The prompt should be a regular expression.
+      # * A nil prompt reads until the session EOF.  Given that EOF indicates
+      #   the end of the session, input specified with a nil prompt raises an
+      #   error.
+      # * A nil max_run_time indicates no maximum run time - which more
+      #   accurately means the input can go until the overall max_run_time for
+      #   the session runs out.
+      #
+      # Returns self.
+      def on(prompt, input=nil, max_run_time=nil, &callback) # :yields: output
         if prompt.nil? && !input.nil?
           raise "cannot provide input without a prompt: #{input.inspect}"
         end
@@ -90,7 +154,8 @@ module ShellTest
 
       # Parses a terminal snippet into steps that a Session can run, and adds
       # those steps to self.  The snippet should utilize ps1 and ps2 as set on
-      # self.  If an exit command is not explicity given, then one is added.
+      # self. An exit command is added unless the :noexit option is set to
+      # true.
       #
       #   session = Session.new
       #   session.parse %{
@@ -131,45 +196,9 @@ module ShellTest
         self
       end
 
-      def make_callback(output)
-        if output && block_given?
-          lambda do |actual|
-            yield(self, output, actual)
-          end
-        else
-          nil
-        end
-      end
-
       # Spawns a PTY shell session and yields an Agent to the block.  The
       # session is logged to log and the final exit status set into status
       # (any previous values are overwritten).
-      #
-      # ==== ENV variables
-      #
-      # PS1 and PS2 are set into ENV for the duration of the block and so in
-      # most cases the shell inherits those values.  Keep in mind, however,
-      # that the shell config scripts can set these variables and on some
-      # distributions (ex SLES 10) the config script do not respect prior
-      # values.
-      #
-      # ==== Exit and Read
-      #
-      # Calling exit on a shell session allows the shell to communicate out an
-      # exit status and to gracefully clean up.  Furthermore a session is
-      # forced timeout if no explicit exit route is specified, so this is
-      # good:
-      #
-      #   agent.write "exit\n"
-      #
-      # However, beware the temptation to read beyond an exit - the behavior
-      # of shell sessions after an exit varies dramatically from system to
-      # system, and occasionally suffers from race conditions.
-      #
-      #   agent.write "exit\n"
-      #   agent.read              # could be "exit", might not be...
-      #
-      # Save yourself. Write the exit and abandon further reads.
       def spawn
         with_env('PS1' => ps1, 'PS2' => ps2) do
           @log = []
@@ -258,6 +287,19 @@ module ShellTest
 %s
 =========================================================
 }) % [shell, timer.elapsed_time, max_run_time, result]
+      end
+
+      private
+
+      # helper to make a callback for validating output
+      def make_callback(output) # :nodoc:
+        if output && block_given?
+          lambda do |actual|
+            yield(self, output, actual)
+          end
+        else
+          nil
+        end
       end
     end
   end
