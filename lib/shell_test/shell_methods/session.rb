@@ -207,6 +207,29 @@ module ShellTest
             agent = Agent.new(master, slave, :timer => timer)
             timer.start(max_run_time)
 
+            if stty
+              # It would be lovely to work this into steps somehow, or to set
+              # the stty externally like:
+              #
+              #   system("stty #{stty} < '#{master.path}'")
+              #
+              # Unfortunately the former complicates result and the latter
+              # doesn't work.  In tests the stty settings DO get set but they
+              # don't refresh in the pty.
+              log << agent.expect(@ps1r, 1)
+              agent.write "stty #{stty}\n"
+              log << agent.expect(@ps1r, 1)
+              agent.write "echo $?\n"
+              log << agent.expect(@ps1r, 1)
+              agent.write "\n"
+
+              unless log.last == "0\n#{ps1}"
+                raise "stty failure\n#{summary}"
+              end
+
+              log.clear
+            end
+
             begin
               yield agent
             rescue Agent::ReadError
@@ -224,21 +247,6 @@ module ShellTest
 
       def run
         spawn do |agent|
-          if stty
-            log << agent.expect(@ps1r, 1)
-            agent.write "stty #{stty}\n"
-            log << agent.expect(@ps1r, 1)
-            agent.write "echo $?\n"
-            log << agent.expect(@ps1r, 1)
-            agent.write "\n"
-
-            unless log.last == "0\n#{ps1}"
-              raise "stty failure\n#{summary}"
-            end
-
-            log.clear
-          end
-
           timeout  = nil
           steps.each do |prompt, input, max_run_time, callback|
             buffer = agent.expect(prompt, timeout)
