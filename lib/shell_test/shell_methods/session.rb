@@ -266,12 +266,6 @@ module ShellTest
 
             timeout = max_run_time
           end
-
-          # read to eof which ensures timeout for unterminated sessions,
-          # and ends up expediting the termination of some shells (ex:
-          # without clearing the slave bash itself appears to time-out
-          # during wait, ~0.5s)
-          agent.read timeout
         end
       end
 
