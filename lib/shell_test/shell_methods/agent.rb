@@ -20,10 +20,10 @@ module ShellTest
       # timer using `timer.timeout=` and retrieved via `timer.timeout`.
       attr_reader :timer
 
-      def initialize(master, slave, attrs={})
+      def initialize(master, slave, timer)
         @master = master
         @slave  = slave
-        @timer  = attrs[:timer] || Timer.new
+        @timer  = timer
       end
 
       # Reads from the slave until the regexp is matched and returns the

@@ -204,7 +204,7 @@ module ShellTest
         with_env('PS1' => ps1, 'PS2' => ps2) do
           @log = []
           @status = super(shell) do |master, slave|
-            agent = Agent.new(master, slave, :timer => timer)
+            agent = Agent.new(master, slave, timer)
             timer.start(max_run_time)
 
             if stty
