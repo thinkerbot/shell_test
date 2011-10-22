@@ -31,6 +31,12 @@ module ShellTest
         @regexps = regexps
       end
 
+      def on(regexp, input, timeout=nil)
+        output = expect(regexp, timeout)
+        write(input)
+        output
+      end
+
       # Reads from the slave until the regexp is matched and returns the
       # resulting string.  If a nil regexp is given then expect reads until
       # the slave eof.

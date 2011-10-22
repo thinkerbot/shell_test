@@ -82,9 +82,10 @@ module ShellTest
         @log     = []
         @status  = nil
 
-        @ps1r    = /#{Regexp.escape(ps1)}/
-        @ps2r    = /#{Regexp.escape(ps2)}/
-        @promptr = /(#{@ps1r}|#{@ps2r}|\{\{(.*?)\}\})/
+        @prompts = {
+          :ps1 => /#{Regexp.escape(ps1)}/,
+          :ps2 => /#{Regexp.escape(ps2)}/
+        }
       end
 
       # Define a step.  At each step:
@@ -121,9 +122,11 @@ module ShellTest
 
       def split(str)
         scanner = StringScanner.new(str)
+        scanner.scan_until(/(#{@prompts[:ps1]})/)
+        scanner.pos -= scanner[1].to_s.length
 
         args = []
-        while output = scanner.scan_until(args.empty? ? /(#{@ps1r})/ : @promptr)
+        while output = scanner.scan_until(/(#{@prompts[:ps1]}|#{@prompts[:ps2]}|\{\{(.*?)\}\})/)
           match = scanner[1]
           input = scanner[2].to_s + scanner.scan_until(/\n/)
 
@@ -135,12 +138,12 @@ module ShellTest
 
           case match
           when ps1
-            prompt = @ps1r
+            prompt = :ps1
             if max_run_time == -1
               max_run_time = nil
             end
           when ps2
-            prompt = @ps2r
+            prompt = :ps2
           else
             output = output.chomp(match)
             start  = output.rindex("\n") || 0
@@ -181,7 +184,7 @@ module ShellTest
           args.pop
         else
           args.last << ps1
-          args.concat [@ps1r, "exit\n", nil, nil]
+          args.concat [:ps1, "exit\n", nil, nil]
         end
 
         while !args.empty?
@@ -204,7 +207,7 @@ module ShellTest
         with_env('PS1' => ps1, 'PS2' => ps2) do
           @log = []
           @status = super(shell) do |master, slave|
-            agent = Agent.new(master, slave, timer)
+            agent = Agent.new(master, slave, timer, @prompts)
             timer.start(max_run_time)
 
             if stty
@@ -216,12 +219,9 @@ module ShellTest
               # Unfortunately the former complicates result and the latter
               # doesn't work.  In tests the stty settings DO get set but they
               # don't refresh in the pty.
-              log << agent.expect(@ps1r, 1)
-              agent.write "stty #{stty}\n"
-              log << agent.expect(@ps1r, 1)
-              agent.write "echo $?\n"
-              log << agent.expect(@ps1r, 1)
-              agent.write "\n"
+              log << agent.on(:ps1, "stty #{stty}\n")
+              log << agent.on(:ps1, "echo $?\n")
+              log << agent.on(:ps1, "\n")
 
               unless log.last == "0\n#{ps1}"
                 raise "stty failure\n#{summary}"
