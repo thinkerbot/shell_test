@@ -78,7 +78,7 @@ module ShellTest
         @stty  = options[:stty]  || DEFAULT_STTY
         @timer = options[:timer] || Timer.new
         @max_run_time = options[:max_run_time] || DEFULAT_MAX_RUN_TIME
-        @steps   = []
+        @steps   = [[nil, nil, nil, nil]]
         @log     = []
         @status  = nil
 
@@ -89,27 +89,33 @@ module ShellTest
 
       # Define a step.  At each step:
       #
-      # 1. Output is read from the shell up to the prompt
-      # 2. The output passed to the callback (if given)
-      # 3. The input is written to the shell (if given)
+      # 1. The session waits until the prompt is matched
+      # 2. The input is written to the shell (if given)
+      # 3. The output passed to the callback (if given)
       #
-      # If the next prompt is not reached within max_run_time then a ReadError
-      # occurs.  Special input considerations:
+      # If the next prompt (or an EOF if there is no next prompt) is not
+      # reached within max_run_time then a ReadError occurs.  Special
+      # considerations:
       #
       # * The prompt should be a regular expression.
-      # * A nil prompt reads until the session EOF.  Given that EOF indicates
-      #   the end of the session, input specified with a nil prompt raises an
-      #   error.
       # * A nil max_run_time indicates no maximum run time - which more
       #   accurately means the input can go until the overall max_run_time for
       #   the session runs out.
+      # * The output passed to the callback will include the string matched by
+      #   the next prompt, if present.
       #
       # Returns self.
       def on(prompt, input=nil, max_run_time=nil, &callback) # :yields: output
-        if prompt.nil? && !input.nil?
-          raise "cannot provide input without a prompt: #{input.inspect}"
+        if prompt.nil?
+          raise ArgumentError, "no prompt specified"
         end
-        steps << [prompt, input, max_run_time, callback]
+
+        last = steps.last
+        last[0] = prompt
+        last[1] = input
+        last[2] = max_run_time
+
+        steps << [nil, nil, nil, callback]
         self
       end
 
@@ -178,19 +184,14 @@ module ShellTest
           args.concat [@ps1r, "exit\n", nil, nil]
         end
 
-        callback = nil
         while !args.empty?
           prompt = args.shift
           input  = args.shift
           max_run_time = args.shift
           output = args.shift
+          callback = make_callback(output, &block)
 
           on(prompt, input, max_run_time, &callback)
-          callback = make_callback(output, &block)
-        end
-
-        if callback
-          on(nil, nil, nil, &callback)
         end
 
         self
