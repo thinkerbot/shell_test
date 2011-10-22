@@ -20,10 +20,15 @@ module ShellTest
       # timer using `timer.timeout=` and retrieved via `timer.timeout`.
       attr_reader :timer
 
-      def initialize(master, slave, timer)
+      # A hash of [name, regexp] pairs allowing logical names to be provided
+      # instead of regexps to expect.
+      attr_reader :regexps
+
+      def initialize(master, slave, timer, regexps={})
         @master = master
         @slave  = slave
         @timer  = timer
+        @regexps = regexps
       end
 
       # Reads from the slave until the regexp is matched and returns the
@@ -35,6 +40,7 @@ module ShellTest
       # will be also be raised if the slave eof is reached before the regexp
       # matches.
       def expect(regexp, timeout=nil)
+        regexp = regexps[regexp] || regexp
         timer.timeout = timeout
 
         buffer = ''
