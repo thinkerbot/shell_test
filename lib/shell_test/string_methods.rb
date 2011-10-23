@@ -7,6 +7,7 @@ module ShellTest
       _assert_str_equal outdent(a), b, msg, &block
     end
 
+    # Same as assert_str_equal but does not outdent.
     def _assert_str_equal(a, b, msg=nil)
       if a == b
         assert true
@@ -27,12 +28,13 @@ module ShellTest
     # provides a more readable output in the case of a failure as compared
     # with assert_match.
     #
-    # If a is a string it is turned into a RegexpEscape.
+    # If a is a string then it is turned into a RegexpEscape.
     def assert_str_match(a, b, msg=nil, &block)
       a = outdent(a) if a.kind_of?(String)
       _assert_str_match a, b, msg, &block
     end
 
+    # Same as assert_str_match but does not outdent.
     def _assert_str_match(a, b, msg=nil)
       if a.kind_of?(String)
         a = RegexpEscape.new(a)
@@ -53,20 +55,21 @@ module ShellTest
       end
     end
 
+    # Indents each line of str as specified.
     def indent(str, indent='  ')
       str.split("\n").collect do |frag|
         "#{indent}#{frag}"
       end.join("\n")
     end
 
-    # helper for stripping indentation off a string
+    # Strips indentation off of the input string.
     def outdent(str)
       str =~ /\A(?:\s*?\n)( *)(.*)\z/m ? $2.gsub!(/^ {0,#{$1.length}}/, '') : str
     end
 
-    # helper for formatting escaping whitespace into readable text
+    # Escapes non-printable characters into readable text.
     def whitespace_escape(str)
-      str.to_s.gsub(/\s/) do |match|
+      str = str.to_s.gsub(/\s/) do |match|
         case match
         when "\n" then "\\n\n"
         when "\t" then "\\t"
@@ -74,7 +77,10 @@ module ShellTest
         when "\f" then "\\f"
         else match
         end
-      end.gsub("\b", "\\b").gsub("\a", "\\a").split("\0").join('\\0')
+      end
+      str.gsub!("\b", "\\b")
+      str.gsub!("\a", "\\a")
+      str.split("\0").join('\\0')
     end
 
     # Expands non-printable characters (ie control characters) in str to their
