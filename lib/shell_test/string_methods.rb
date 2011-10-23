@@ -77,8 +77,8 @@ module ShellTest
       end.gsub("\b", "\\b").gsub("\a", "\\a").split("\0").join('\\0')
     end
 
-    # Escapes non-printable characters (ie control characters) in str to
-    # their printable equivalents. Specifically:
+    # Expands non-printable characters (ie control characters) in str to their
+    # common print equivalents. Specifically:
     #
     #   ctrl char         before    after
     #   null              "ab\0c"    "abc"
@@ -89,7 +89,7 @@ module ShellTest
     #   form feed         "ab\fc"    "ab\n  c"
     #   carraige return   "ab\rc"    "c"
     #
-    def escape_non_printable_chars(str)
+    def expand_ctrl_chars(str)
       str = str.gsub(/^.*?\r/, '')
       str.gsub!(/(\A#{"\b"}|.#{"\b"}|#{"\a"}|#{"\0"})/m, '')
       str.gsub!(/(^.*?)\f/) { "#{$1}\n#{' ' * $1.length}" }

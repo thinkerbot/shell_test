@@ -82,62 +82,62 @@ line two
   end
 
   #
-  # escape_non_printable_chars test
+  # expand_ctrl_chars test
   #
 
-  def test_escape_non_printable_chars_documentation
-    assert_equal "abc",     escape_non_printable_chars("ab\0c")
-    assert_equal "abc",     escape_non_printable_chars("ab\ac")
-    assert_equal "ac",      escape_non_printable_chars("ab\bc")
-    assert_equal "ab\tc",   escape_non_printable_chars("ab\tc")
-    assert_equal "ab\nc",   escape_non_printable_chars("ab\nc")
-    assert_equal "ab\n  c", escape_non_printable_chars("ab\fc")
-    assert_equal "c",       escape_non_printable_chars("ab\rc")
+  def test_expand_ctrl_chars_documentation
+    assert_equal "abc",     expand_ctrl_chars("ab\0c")
+    assert_equal "abc",     expand_ctrl_chars("ab\ac")
+    assert_equal "ac",      expand_ctrl_chars("ab\bc")
+    assert_equal "ab\tc",   expand_ctrl_chars("ab\tc")
+    assert_equal "ab\nc",   expand_ctrl_chars("ab\nc")
+    assert_equal "ab\n  c", expand_ctrl_chars("ab\fc")
+    assert_equal "c",       expand_ctrl_chars("ab\rc")
   end
 
-  def test_escape_non_printable_chars_removes_null_char
-    assert_equal "ac", escape_non_printable_chars("\0ac")
-    assert_equal "ac", escape_non_printable_chars("a\0c")
-    assert_equal "ac", escape_non_printable_chars("ac\0")
+  def test_expand_ctrl_chars_removes_null_char
+    assert_equal "ac", expand_ctrl_chars("\0ac")
+    assert_equal "ac", expand_ctrl_chars("a\0c")
+    assert_equal "ac", expand_ctrl_chars("ac\0")
   end
 
-  def test_escape_non_printable_chars_removes_bell_char
-    assert_equal "ac", escape_non_printable_chars("\aac")
-    assert_equal "ac", escape_non_printable_chars("a\ac")
-    assert_equal "ac", escape_non_printable_chars("ac\a")
+  def test_expand_ctrl_chars_removes_bell_char
+    assert_equal "ac", expand_ctrl_chars("\aac")
+    assert_equal "ac", expand_ctrl_chars("a\ac")
+    assert_equal "ac", expand_ctrl_chars("ac\a")
   end
 
-  def test_escape_non_printable_chars_removes_backspace_and_previous_char
-    assert_equal "ac", escape_non_printable_chars("\bac")
-    assert_equal "c",  escape_non_printable_chars("a\bc")
-    assert_equal "a",  escape_non_printable_chars("ac\b")
+  def test_expand_ctrl_chars_removes_backspace_and_previous_char
+    assert_equal "ac", expand_ctrl_chars("\bac")
+    assert_equal "c",  expand_ctrl_chars("a\bc")
+    assert_equal "a",  expand_ctrl_chars("ac\b")
   end
 
-  def test_escape_non_printable_chars_preserves_tab
-    assert_equal "\tac", escape_non_printable_chars("\tac")
-    assert_equal "a\tc", escape_non_printable_chars("a\tc")
-    assert_equal "ac\t", escape_non_printable_chars("ac\t")
+  def test_expand_ctrl_chars_preserves_tab
+    assert_equal "\tac", expand_ctrl_chars("\tac")
+    assert_equal "a\tc", expand_ctrl_chars("a\tc")
+    assert_equal "ac\t", expand_ctrl_chars("ac\t")
   end
 
-  def test_escape_non_printable_chars_preserves_newline
-    assert_equal "\nac", escape_non_printable_chars("\nac")
-    assert_equal "a\nc", escape_non_printable_chars("a\nc")
-    assert_equal "ac\n", escape_non_printable_chars("ac\n")
+  def test_expand_ctrl_chars_preserves_newline
+    assert_equal "\nac", expand_ctrl_chars("\nac")
+    assert_equal "a\nc", expand_ctrl_chars("a\nc")
+    assert_equal "ac\n", expand_ctrl_chars("ac\n")
   end
 
-  def test_escape_non_printable_chars_adds_ff_chars
-    assert_equal "\nac",   escape_non_printable_chars("\fac")
-    assert_equal "a\n c",  escape_non_printable_chars("a\fc")
-    assert_equal "ac\n  ", escape_non_printable_chars("ac\f")
+  def test_expand_ctrl_chars_adds_ff_chars
+    assert_equal "\nac",   expand_ctrl_chars("\fac")
+    assert_equal "a\n c",  expand_ctrl_chars("a\fc")
+    assert_equal "ac\n  ", expand_ctrl_chars("ac\f")
   end
 
-  def test_escape_non_printable_chars_removes_carriage_returns_back_to_newline
-    assert_equal "ac", escape_non_printable_chars("\rac")
-    assert_equal "c",  escape_non_printable_chars("a\rc")
-    assert_equal "",   escape_non_printable_chars("ac\r")
+  def test_expand_ctrl_chars_removes_carriage_returns_back_to_newline
+    assert_equal "ac", expand_ctrl_chars("\rac")
+    assert_equal "c",  expand_ctrl_chars("a\rc")
+    assert_equal "",   expand_ctrl_chars("ac\r")
 
-    assert_equal "ab\nxy", escape_non_printable_chars("ab\n\rxy")
-    assert_equal "ab\ny",  escape_non_printable_chars("ab\nx\ry")
-    assert_equal "ab\n",   escape_non_printable_chars("ab\nxy\r")
+    assert_equal "ab\nxy", expand_ctrl_chars("ab\n\rxy")
+    assert_equal "ab\ny",  expand_ctrl_chars("ab\nx\ry")
+    assert_equal "ab\n",   expand_ctrl_chars("ab\nxy\r")
   end
 end
