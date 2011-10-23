@@ -35,18 +35,14 @@ may be used independently, but by including ShellTest you get them all:
 ==== {ShellMethods}[link:classes/ShellTest/ShellMethods.html]
 
 Provides the shell testing methods. These methods are designed to input a
-string that looks like terminal input/output. Commands are parsed out of the
-string, run, and then anything printed to stdout is compared to the expected
-output. In addition the exit status is checked for success (0).
-
-Special comments following the first line of a command can turn off
-output/status checking, or specify a different exit status to expect.
+string that looks like terminal input/output. Indeed with PS1 and PS2 set to
+their POSIX defaults, assert_script tests can be created by directly copying
+from the terminal.
 
   require 'shell_test/unit'
-  
   class ShellMethodsExample < Test::Unit::TestCase
     include ShellTest::ShellMethods
-  
+
     def test_a_script_using_variables
       with_env("THING" => "moon") do
         assert_script %{
@@ -55,7 +51,7 @@ output/status checking, or specify a different exit status to expect.
         }
       end
     end
-  
+
     def test_multiple_commands
       assert_script %{
         $ echo one
@@ -64,7 +60,7 @@ output/status checking, or specify a different exit status to expect.
         two
       }
     end
-  
+
     def test_multiline_commands
       assert_script %{
         $ for n in one two; do
@@ -74,20 +70,40 @@ output/status checking, or specify a different exit status to expect.
         two
       }
     end
-  
+
     def test_exit_status
       assert_script %{
         $ false
       }, :exitstatus => 1
     end
-  
-    def test_output_with_inline_regexps
+
+    def test_script_with_overall_and_per_command_timeouts
+      assert_script %{
+        $ sleep 0.1  # [0.5]
+        $ sleep 0.1  # [0.5]
+      }, :max_run_time => 1
+    end
+
+    def test_scripts_with_inline_regexps
       assert_script_match %{
         $ cal
         :...:
         Su Mo Tu We Th Fr Sa:. *.:
         :....:
       }
+    end
+
+    def test_scripts_that_take_input
+      assert_script %{
+        $ sudo echo 'sorry i cant do that dave'
+        Password:{{notIt}}
+        Sorry, try again.
+        Password:{{mayBeThis}}
+        Sorry, try again.
+        Password:{{cr@pWhatIsIt}}
+        Sorry, try again.
+        sudo: 3 incorrect password attempts
+      }, :max_run_time => 10
     end
   end
 
@@ -123,17 +139,11 @@ ShellTest is available as a gem[http://rubygems.org/gems/shell_test].
 
 To get started, checkout the code from GitHub[http://github.com/thinkerbot/shell_test] and run:
 
-  git clone git://github.com/thinkerbot/shell_test.git
-  cd shell_test
   rake test
-
-To test against multiple platforms I suggest using rvm.  In that case:
-
-  rvm rake test
 
 Please report any issues {here}[http://github.com/thinkerbot/shell_test/issues].
 
 == Info
 
-Developer:: {Simon Chiang}[http://thinkerbot.posterous.com]
+Developer:: {Simon Chiang}[http://github.com/thinkerbot]
 License:: {MIT-Style}[link:files/MIT-LICENSE.html]

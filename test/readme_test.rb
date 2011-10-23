@@ -73,13 +73,33 @@ class ReadmeTest < Test::Unit::TestCase
             }, :exitstatus => 1
           end
 
-          def test_output_with_inline_regexps
+          def test_script_with_overall_and_per_command_timeouts
+            assert_script %{
+              $ sleep 0.1  # [0.5]
+              $ sleep 0.1  # [0.5]
+            }, :max_run_time => 1
+          end
+
+          def test_scripts_with_inline_regexps
             assert_script_match %{
               $ cal
               :...:
               Su Mo Tu We Th Fr Sa:. *.:
               :....:
             }
+          end
+
+          def test_scripts_that_take_input
+            assert_script %{
+              $ sudo echo 'sorry i cant do that dave'
+              Password:{{notIt}}
+              Sorry, try again.
+              Password:{{mayBeThis}}
+              Sorry, try again.
+              Password:{{cr@pWhatIsIt}}
+              Sorry, try again.
+              sudo: 3 incorrect password attempts
+            }, :max_run_time => 10
           end
         end
       })
