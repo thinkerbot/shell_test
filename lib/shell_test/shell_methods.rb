@@ -7,17 +7,11 @@ module ShellTest
     include StringMethods
     include EnvMethods
 
-    def default_pty_options
-      {:max_run_time => 2, :visual => true}
-    end
-
     def pty(script, options={}, &block)
       _pty outdent(script), options, &block
     end
 
     def _pty(script, options={}, &block)
-      options = default_pty_options.merge(options)
-
       session = Session.new(options)
       session.parse(script, options, &block)
       session.run
