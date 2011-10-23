@@ -20,33 +20,32 @@ module ShellTest
       # timer using `timer.timeout=` and retrieved via `timer.timeout`.
       attr_reader :timer
 
-      # A hash of [name, regexp] pairs allowing logical names to be provided
-      # instead of regexps to expect.
-      attr_reader :regexps
+      # A hash of [name, regexp] pairs mapping logical names to prompts.
+      attr_reader :prompts
 
-      def initialize(master, slave, timer, regexps={})
+      def initialize(master, slave, timer, prompts={})
         @master = master
         @slave  = slave
         @timer  = timer
-        @regexps = regexps
+        @prompts = prompts
       end
 
-      def on(regexp, input, timeout=nil)
-        output = expect(regexp, timeout)
+      def on(prompt, input, timeout=nil)
+        output = expect(prompt, timeout)
         write(input)
         output
       end
 
-      # Reads from the slave until the regexp is matched and returns the
-      # resulting string.  If a nil regexp is given then expect reads until
-      # the slave eof.
+      # Reads from the slave until the prompt (a regexp) is matched and
+      # returns the resulting string.  If a nil prompt is given then expect
+      # reads until the slave eof.
       #
       # A timeout may be given. If the slave doesn't produce the expected
       # string within the timeout then expect raises a ReadError. A ReadError
-      # will be also be raised if the slave eof is reached before the regexp
+      # will be also be raised if the slave eof is reached before the prompt
       # matches.
-      def expect(regexp, timeout=nil)
-        regexp = regexps[regexp] || regexp
+      def expect(prompt, timeout=nil)
+        regexp = prompts[prompt] || prompt
         timer.timeout = timeout
 
         buffer = ''
@@ -55,10 +54,10 @@ module ShellTest
 
           # Use read+select instead of read_nonblock to avoid polling in a
           # tight loop.  Don't bother with readpartial and partial lengths. It
-          # is an optimization, especially because the regexp matches each
-          # loop, but adds complexity because expect could read past the end
-          # of the regexp in some cases and it is unlikely to be necessary in
-          # test scenarios (ie this is not mean to be a general solution).
+          # would be an optimization, especially because the regexp matches
+          # each loop, but adds complexity because expect could read past the
+          # end of the regexp and it is unlikely to be necessary in test
+          # scenarios (ie this is not meant to be a general solution).
           unless IO.select([slave],nil,nil,timeout)
             msg = "timeout waiting for %s after %.2fs" % [regexp ? regexp.inspect : 'EOF', timeout]
             raise ReadError.new(msg, buffer)
