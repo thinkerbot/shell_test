@@ -5,34 +5,8 @@ require 'strscan'
 
 module ShellTest
   module ShellMethods
-    
+
     # Session is an engine for running shell sessions.
-    #
-    # ==== ENV variables
-    #
-    # PS1 and PS2 are set into ENV for the duration of the block and so in
-    # most cases the shell inherits those values.  Keep in mind, however,
-    # that the shell config scripts can set these variables and on some
-    # distributions (ex SLES 10) the config script do not respect prior
-    # values.
-    #
-    # ==== Exit and Read
-    #
-    # Calling exit on a shell session allows the shell to communicate out an
-    # exit status and to gracefully clean up.  Furthermore a session is
-    # forced timeout if no explicit exit route is specified, so this is
-    # good:
-    #
-    #   agent.write "exit\n"
-    #
-    # However, beware the temptation to read beyond an exit - the behavior
-    # of shell sessions after an exit varies dramatically from system to
-    # system, and occasionally suffers from race conditions.
-    #
-    #   agent.write "exit\n"
-    #   agent.read              # could be "exit", might not be...
-    #
-    # Save yourself. Write the exit and abandon further reads.
     class Session
       include EnvMethods
       include Utils
@@ -206,6 +180,15 @@ module ShellTest
       # Spawns a PTY shell session and yields an Agent to the block.  The
       # session is logged to log and the final exit status set into status
       # (any previous values are overwritten).
+      #
+      # ==== ENV variables
+      #
+      # PS1 and PS2 are set into ENV for the duration of the block and so in
+      # most cases the shell inherits those values.  Keep in mind, however,
+      # that the shell config scripts can set these variables and on some
+      # distributions (ex SLES 10) the config script do not respect prior
+      # values.
+      #
       def spawn
         with_env('PS1' => ps1, 'PS2' => ps2) do
           @log = []
