@@ -105,7 +105,7 @@ module ShellTest
         args = []
         while output = scanner.scan_until(/(#{@prompts[:ps1]}|#{@prompts[:ps2]}|\{\{(.*?)\}\})/)
           match = scanner[1]
-          input = scanner[2].to_s + scanner.scan_until(/\n/)
+          input = scanner[2] ? "#{scanner[2]}\n" : scanner.scan_until(/\n/)
 
           max_run_time = -1
           input.sub!(/\#\s*\[(\d+(?:\.\d+)?)\].*$/) do
@@ -123,9 +123,7 @@ module ShellTest
             prompt = :ps2
           else
             output = output.chomp(match)
-            start  = output.rindex("\n") || 0
-            length = output.length - start
-            prompt = /^#{output[start, length]}\z/
+            prompt = /^#{output.split("\n").last}\z/
           end
 
           args << output
