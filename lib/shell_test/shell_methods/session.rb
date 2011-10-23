@@ -55,7 +55,7 @@ module ShellTest
       # Aguments string passed stty on run
       attr_reader :stty
 
-      # The session timer
+      # The session timer, used by agents to determine timeouts
       attr_reader :timer
 
       # The maximum run time for the session
@@ -81,7 +81,6 @@ module ShellTest
         @steps   = [[nil, nil, nil, nil]]
         @log     = []
         @status  = nil
-
         @prompts = {
           :ps1 => /#{Regexp.escape(ps1)}/,
           :ps2 => /#{Regexp.escape(ps2)}/
@@ -98,7 +97,7 @@ module ShellTest
       # reached within max_run_time then a ReadError occurs.  Special
       # considerations:
       #
-      # * The prompt should be a regular expression.
+      # * The prompt should be a regular expression, :ps1, or :ps2.
       # * A nil max_run_time indicates no maximum run time - which more
       #   accurately means the input can go until the overall max_run_time for
       #   the session runs out.
@@ -111,6 +110,10 @@ module ShellTest
           raise ArgumentError, "no prompt specified"
         end
 
+        # Stagger assignment of step arguments so that the callback will be
+        # recieve the output of the input. Not only is this more intuitive, it
+        # ensures the last step will read to EOF (which expedites waiting on
+        # the session to terminate).
         last = steps.last
         last[0] = prompt
         last[1] = input
@@ -245,6 +248,9 @@ module ShellTest
         self
       end
 
+      # Runs each of steps within a shell session and collects the
+      # inputs/outputs into log. After run the exit status of the session is
+      # set into status.
       def run
         spawn do |agent|
           timeout  = nil
