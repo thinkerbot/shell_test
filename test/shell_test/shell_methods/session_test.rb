@@ -70,7 +70,7 @@ class SessionTest < Test::Unit::TestCase
 $ echo abc
 abc
 }
-    assert_equal "$ echo abc\nabc\n$ exit\n", session.run.result
+    assert_equal "$ echo abc\nabc\n$ exit\nexit\n", session.run.result
   end
 
   #
@@ -103,7 +103,7 @@ abc
     session.on(/\$\ /, "echo hello world\n")
     session.on(/\$\ /, "exit 8\n")
 
-    assert_equal "$ echo hello world\nhello world\n$ exit 8\n", session.run.result
+    assert_equal "$ echo hello world\nhello world\n$ exit 8\nexit\n", session.run.result
     assert_equal 8, session.status.exitstatus
   end
 
@@ -112,7 +112,7 @@ abc
     session.on(/>\ /, "c\n")
     session.on(/\$\ /, "exit\n")
 
-    assert_equal "$ echo ab\\\n> c\nabc\n$ exit\n", session.run.result
+    assert_equal "$ echo ab\\\n> c\nabc\n$ exit\nexit\n", session.run.result
     assert_equal 0, session.status.exitstatus
   end
 
@@ -122,7 +122,7 @@ abc
     session.on(/\: /, "c\n")
     session.on(/\% /, "exit\n")
 
-    assert_equal "% echo ab\\\n: c\nabc\n% exit\n", session.run.result
+    assert_equal "% echo ab\\\n: c\nabc\n% exit\nexit\n", session.run.result
     assert_equal 0, session.status.exitstatus
   end
 

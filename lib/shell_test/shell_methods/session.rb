@@ -174,7 +174,7 @@ module ShellTest
       #   $ echo abc
       #   abc
       #   }
-      #   session.run.result   # => "$ echo abc\nabc\n$ exit\n"
+      #   session.run.result   # => "$ echo abc\nabc\n$ exit\nexit\n"
       #
       # Steps are registered with a callback block, if given, to recieve the
       # expected and actual outputs during run.  Normally the callback is used
@@ -256,10 +256,7 @@ module ShellTest
           timeout  = nil
           steps.each do |prompt, input, max_run_time, callback|
             buffer = agent.expect(prompt, timeout)
-
-            if prompt
-              log << buffer
-            end
+            log << buffer
 
             if callback
               callback.call buffer
