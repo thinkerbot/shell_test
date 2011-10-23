@@ -41,7 +41,7 @@ module ShellTest
       DEFAULT_PS1   = '$ '
       DEFAULT_PS2   = '> '
       DEFAULT_STTY  = '-echo -onlcr'
-      DEFULAT_MAX_RUN_TIME = 1
+      DEFAULT_MAX_RUN_TIME = 1
 
       # The session shell
       attr_reader :shell
@@ -77,7 +77,7 @@ module ShellTest
         @ps2   = options[:ps2]   || DEFAULT_PS2
         @stty  = options[:stty]  || DEFAULT_STTY
         @timer = options[:timer] || Timer.new
-        @max_run_time = options[:max_run_time] || DEFULAT_MAX_RUN_TIME
+        @max_run_time = options[:max_run_time] || DEFAULT_MAX_RUN_TIME
         @steps   = [[nil, nil, nil, nil]]
         @log     = []
         @status  = nil
