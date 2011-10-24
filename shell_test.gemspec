@@ -18,7 +18,8 @@ Gem::Specification.new do |s|
   }.join(' ')
 
   s.rubyforge_project = 'shell_test'
-  
+  s.license = 'MIT'
+
   s.has_rdoc = true
   s.rdoc_options.concat %W{--main README.rdoc -S -N --title ShellTest}
   s.extra_rdoc_files = %w{
@@ -29,10 +30,14 @@ Gem::Specification.new do |s|
 
   s.files         = %w{
     lib/shell_test.rb
-    lib/shell_test/command_parser.rb
+    lib/shell_test/env_methods.rb
     lib/shell_test/file_methods.rb
     lib/shell_test/regexp_escape.rb
     lib/shell_test/shell_methods.rb
+    lib/shell_test/shell_methods/agent.rb
+    lib/shell_test/shell_methods/session.rb
+    lib/shell_test/shell_methods/timer.rb
+    lib/shell_test/shell_methods/utils.rb
     lib/shell_test/string_methods.rb
     lib/shell_test/unit.rb
     lib/shell_test/unit/shim.rb

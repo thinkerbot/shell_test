@@ -1,3 +1,10 @@
+== 0.3.0 2011/10/23
+
+Rewrite and expansion of library to use PTY shell sessions rather than
+individual system commands to test scripts. This marks a significant break in
+functionality. Per-command exit status tests are no longer possible, but
+testing scripts with state is now possible.
+
 == 0.2.0 2011/08/03
 
 * Split out a StringMethods module [issue #7]
