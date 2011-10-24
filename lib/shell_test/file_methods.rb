@@ -210,7 +210,9 @@ module ShellTest
     # Creates a directory under method_dir.
     def prepare_dir(relative_path)
       target_dir = path(relative_path)
-      FileUtils.mkdir_p(target_dir)
+      unless File.directory?(target_dir)
+        FileUtils.mkdir_p(target_dir)
+      end
       target_dir
     end
 
