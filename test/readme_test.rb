@@ -21,7 +21,7 @@ class ReadmeTest < Test::Unit::TestCase
             assert_script %{
               $ sh '#{script}' moon
               goodnight moon
-            }
+            }, :exitstatus => 0
           end
         end
       })
@@ -59,12 +59,6 @@ class ReadmeTest < Test::Unit::TestCase
               one
               two
             }
-          end
-
-          def test_exit_status
-            assert_script %{
-              $ false
-            }, :exitstatus => 1
           end
 
           def test_script_with_overall_and_per_command_timeouts
