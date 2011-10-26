@@ -14,7 +14,14 @@ module ShellTest
       # process and raise a PTY::ChildExited error in some cases.  As a result
       # manual calls to Process.wait (which would set $?) cause a race
       # condition. Rely on the output of spawn instead.
-      def spawn(cmd)
+      def spawn(cmd, log=[])
+        # The race condition described above actually applies to both kill and
+        # wait which raise Errno::ESRCH or Errno::ECHILD if they lose the
+        # race.  This code is designed to capture those errors if they occur
+        # and then give the cleanup thread a chance to take over; eventually
+        # it will raise a ChildExited error.  This is a sketchy use of
+        # exceptions for flow control but there is little option - a
+        # consequence of PTY using threads with side effects.
         PTY.spawn(cmd) do |slave, master, pid|
           begin
             yield(master, slave)
@@ -22,46 +29,59 @@ module ShellTest
             begin
               Process.wait(pid)
             rescue Errno::ECHILD
-              # The thread that raises a ChildExited error can finish waiting
-              # on the pid and transfer control back to this thread before
-              # actually raising the ChildExited error.  Catch the resulting
-              # Errno::ECHILD and pass control back to enter the rescue block
-              # below.
               Thread.pass
+              raise
             end
 
           rescue PTY::ChildExited
-            # handle a ChildExited error on 1.8.6 and 1.8.7 as a 'normal' exit
-            # route.  1.9.2 does not exit this way.
+            # This is the 'normal' exit route on 1.8.6 and 1.8.7.
             return $!.status
 
-          rescue Exception
-            # cleanup the pty on error
-            Process.kill(9, pid)
+          rescue Exception => error
+            begin
 
-            # clearing the slave allows the wait to complete faster
-            while IO.select([slave],nil,nil,0.1)
+              # Manually cleanup the pid on error.  This code no longer cares
+              # what exactly happens to $? - the point is to make sure the
+              # child doesn't become a zombie and then re-raise the error.
               begin
-                break unless slave.read(1)
-              rescue Errno::EIO
-                # On some linux (ex ubuntu) read can return an eof or fail with
-                # an EIO error when a terminal disconnect occurs and an EIO
-                # condition occurs - the exact behavior is unspecified but the
-                # meaning is the same... no more data is available, so break.
-                break
+                Process.kill(9, pid)
+              rescue Errno::ESRCH
+                Thread.pass
+                raise
               end
+
+              # Clearing the slave allows quicker exits on OS X.
+              while IO.select([slave],nil,nil,0.1)
+                begin
+                  break unless slave.read(1)
+                rescue Errno::EIO
+                  # On some linux (ex ubuntu) read can return an eof or fail with
+                  # an EIO error when a terminal disconnect occurs and an EIO
+                  # condition occurs - the exact behavior is unspecified but the
+                  # meaning is the same... no more data is available, so break.
+                  break
+                end
+              end
+
+              begin
+                Process.wait(pid)
+              rescue Errno::ECHILD
+                Thread.pass
+                raise
+              end
+
+            rescue PTY::ChildExited
+              # The cleanup thread could finish at any point in the rescue
+              # handling so account for that here.
+            ensure
+              raise error
             end
-
-            # any wait can cause a ChildExited error so account for that here
-            # - the $? is indeterminate in this case prior to 1.9.2
-            Process.wait(pid) rescue PTY::ChildExited
-
-            raise
           end
         end
 
         $?
       end
+
     end
   end
 end
