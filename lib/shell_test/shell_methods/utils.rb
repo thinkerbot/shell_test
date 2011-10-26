@@ -44,6 +44,10 @@ module ShellTest
               begin
                 break unless slave.read(1)
               rescue Errno::EIO
+                # On some linux (ex ubuntu) read can return an eof or fail with
+                # an EIO error when a terminal disconnect occurs and an EIO
+                # condition occurs - the exact behavior is unspecified but the
+                # meaning is the same... no more data is available, so break.
                 break
               end
             end
