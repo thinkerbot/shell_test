@@ -18,7 +18,17 @@ module ShellTest
         PTY.spawn(cmd) do |slave, master, pid|
           begin
             yield(master, slave)
-            Process.wait(pid)
+
+            begin
+              Process.wait(pid)
+            rescue Errno::ECHILD
+              # The thread that raises a ChildExited error can finish waiting
+              # on the pid and transfer control back to this thread before
+              # actually raising the ChildExited error.  Catch the resulting
+              # Errno::ECHILD and pass control back to enter the rescue block
+              # below.
+              Thread.pass
+            end
 
           rescue PTY::ChildExited
             # handle a ChildExited error on 1.8.6 and 1.8.7 as a 'normal' exit
