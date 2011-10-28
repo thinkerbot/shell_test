@@ -20,32 +20,27 @@ module ShellTest
       # timer using `timer.timeout=` and retrieved via `timer.timeout`.
       attr_reader :timer
 
-      # A hash of [name, regexp] pairs mapping logical names to prompts.
-      attr_reader :prompts
-
-      def initialize(master, slave, timer, prompts={})
+      def initialize(master, slave, timer)
         @master = master
         @slave  = slave
         @timer  = timer
-        @prompts = prompts
       end
 
-      def on(prompt, input, timeout=nil)
-        output = expect(prompt, timeout)
+      def on(regexp, input, timeout=nil)
+        output = expect(regexp, timeout)
         write(input)
         output
       end
 
-      # Reads from the slave until the prompt (a regexp) is matched and
-      # returns the resulting string.  If a nil prompt is given then expect
-      # reads until the slave eof.
+      # Reads from the slave until the regexp is matched and returns the
+      # resulting string.  If regexp is nil then expect reads until the slave
+      # eof.
       #
       # A timeout may be given. If the slave doesn't produce the expected
       # string within the timeout then expect raises a ReadError. A ReadError
-      # will be also be raised if the slave eof is reached before the prompt
+      # will be also be raised if the slave eof is reached before the regexp
       # matches.
-      def expect(prompt, timeout=nil)
-        regexp = prompts[prompt] || prompt
+      def expect(regexp, timeout=nil)
         timer.timeout = timeout
 
         buffer = ''

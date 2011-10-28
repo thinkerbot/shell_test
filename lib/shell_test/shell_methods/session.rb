@@ -121,12 +121,12 @@ module ShellTest
 
           case match
           when ps1
-            prompt = :ps1
+            prompt = @prompts[:ps1]
             if max_run_time == -1
               max_run_time = nil
             end
           when ps2
-            prompt = :ps2
+            prompt = @prompts[:ps2]
           else
             output = output.chomp(match)
             prompt = /^#{output.split("\n").last}\z/
@@ -165,7 +165,7 @@ module ShellTest
           args.pop
         else
           args.last << ps1
-          args.concat [:ps1, "exit\n", nil, nil]
+          args.concat [@prompts[:ps1], "exit\n", nil, nil]
         end
 
         while !args.empty?
@@ -197,7 +197,7 @@ module ShellTest
         with_env(env) do
           @log = []
           @status = super(shell) do |master, slave|
-            agent = Agent.new(master, slave, timer, @prompts)
+            agent = Agent.new(master, slave, timer)
             timer.start(max_run_time)
 
             if stty
@@ -209,9 +209,9 @@ module ShellTest
               # Unfortunately the former complicates result and the latter
               # doesn't work.  In tests the stty settings DO get set but they
               # don't refresh in the pty.
-              log << agent.on(:ps1, "stty #{stty}\n")
-              log << agent.on(:ps1, "echo $?\n")
-              log << agent.on(:ps1, "\n")
+              log << agent.on(@prompts[:ps1], "stty #{stty}\n")
+              log << agent.on(@prompts[:ps1], "echo $?\n")
+              log << agent.on(@prompts[:ps1], "\n")
 
               unless log.last == "0\n#{ps1}"
                 raise "stty failure\n#{summary}"
