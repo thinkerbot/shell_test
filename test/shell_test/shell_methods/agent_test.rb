@@ -96,6 +96,11 @@ class AgentTest < Test::Unit::TestCase
     assert_equal "abcxyz", agent.expect(nil, 0.1)
   end
 
+  def test_expect_converts_strings_to_prompt_regexps
+    agent.master << "abc$ xyz"
+    assert_equal "abc$ ", agent.expect("$ ", 0.1)
+  end
+
   def test_expect_raises_error_on_eof_if_regexp_has_not_matched
     agent.master << "abc"
     agent.master.close

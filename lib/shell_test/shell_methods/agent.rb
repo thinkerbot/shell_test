@@ -33,14 +33,20 @@ module ShellTest
       end
 
       # Reads from the slave until the regexp is matched and returns the
-      # resulting string.  If regexp is nil then expect reads until the slave
-      # eof.
+      # resulting string.  If regexp is a String, then it is converted into a
+      # regexp assuming it's a literal prompt (ie /^regexp\z/ - where the
+      # regexp string is Regexp escaped). If regexp is nil then expect reads
+      # until the slave eof.
       #
       # A timeout may be given. If the slave doesn't produce the expected
       # string within the timeout then expect raises a ReadError. A ReadError
       # will be also be raised if the slave eof is reached before the regexp
       # matches.
       def expect(regexp, timeout=nil)
+        if regexp.kind_of?(String)
+          regexp = /#{Regexp.escape(regexp)}\z/
+        end
+
         timer.timeout = timeout
 
         buffer = ''
