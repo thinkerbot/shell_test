@@ -132,7 +132,7 @@ abc
 
     err = assert_raises(Agent::ReadError) { session.run }
     assert_str_match %Q{
-      timeout waiting for /\\$\\ / after :...:s
+      timeout waiting for /\\$\\ \\z/ after :...:s
 
       #{session.shell} (elapsed: 0.20s max: 0.20s)
       =========================================================

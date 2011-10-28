@@ -51,10 +51,6 @@ module ShellTest
         @steps   = [[nil, nil, nil, nil]]
         @log     = []
         @status  = nil
-        @prompts = {
-          :ps1 => /#{Regexp.escape(ps1)}/,
-          :ps2 => /#{Regexp.escape(ps2)}/
-        }
       end
 
       # The shell PS1, as configured in env.
@@ -105,11 +101,11 @@ module ShellTest
 
       def split(str)
         scanner = StringScanner.new(str)
-        scanner.scan_until(/(#{@prompts[:ps1]})/)
+        scanner.scan_until(/(#{Regexp.escape(ps1)})/)
         scanner.pos -= scanner[1].to_s.length
 
         args = []
-        while output = scanner.scan_until(/(#{@prompts[:ps1]}|#{@prompts[:ps2]}|\{\{(.*?)\}\})/)
+        while output = scanner.scan_until(/(#{Regexp.escape(ps1)}|#{Regexp.escape(ps2)}|\{\{(.*?)\}\})/)
           match = scanner[1]
           input = scanner[2] ? "#{scanner[2]}\n" : scanner.scan_until(/\n/)
 
@@ -121,15 +117,15 @@ module ShellTest
 
           case match
           when ps1
-            prompt = @prompts[:ps1]
+            prompt = match
             if max_run_time == -1
               max_run_time = nil
             end
           when ps2
-            prompt = @prompts[:ps2]
+            prompt = match
           else
             output = output.chomp(match)
-            prompt = /^#{output.split("\n").last}\z/
+            prompt = output.split("\n").last
           end
 
           args << output
@@ -165,7 +161,7 @@ module ShellTest
           args.pop
         else
           args.last << ps1
-          args.concat [@prompts[:ps1], "exit\n", nil, nil]
+          args.concat [ps1, "exit\n", nil, nil]
         end
 
         while !args.empty?
@@ -209,9 +205,9 @@ module ShellTest
               # Unfortunately the former complicates result and the latter
               # doesn't work.  In tests the stty settings DO get set but they
               # don't refresh in the pty.
-              log << agent.on(@prompts[:ps1], "stty #{stty}\n")
-              log << agent.on(@prompts[:ps1], "echo $?\n")
-              log << agent.on(@prompts[:ps1], "\n")
+              log << agent.on(ps1, "stty #{stty}\n")
+              log << agent.on(ps1, "echo $?\n")
+              log << agent.on(ps1, "\n")
 
               unless log.last == "0\n#{ps1}"
                 raise "stty failure\n#{summary}"
