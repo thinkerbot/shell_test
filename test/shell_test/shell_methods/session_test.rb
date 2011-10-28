@@ -117,7 +117,7 @@ abc
   end
 
   def test_run_with_different_ps1_and_ps2
-    session = Session.new(:ps1 => '% ', :ps2 => ': ')
+    session = Session.new(:env => {'PS1' => '% ', 'PS2' => ': '})
     session.on(/\% /, "echo ab\\\n")
     session.on(/\: /, "c\n")
     session.on(/\% /, "exit\n")

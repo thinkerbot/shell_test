@@ -12,19 +12,16 @@ module ShellTest
       include Utils
 
       DEFAULT_SHELL = '/bin/sh'
-      DEFAULT_PS1   = '$ '
-      DEFAULT_PS2   = '> '
+      DEFAULT_ENV   = {'PS1' => '$ ', 'PS2' => '> '}
       DEFAULT_STTY  = '-echo -onlcr'
       DEFAULT_MAX_RUN_TIME = 1
 
       # The session shell
       attr_reader :shell
 
-      # The shell PS1
-      attr_reader :ps1
-
-      # The shell PS2
-      attr_reader :ps2
+      # The initial session ENV (as established by the parent ruby process -
+      # note the shell init scripts can override it before the first prompt)
+      attr_reader :env
 
       # Aguments string passed stty on run
       attr_reader :stty
@@ -47,8 +44,7 @@ module ShellTest
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
-        @ps1   = options[:ps1]   || DEFAULT_PS1
-        @ps2   = options[:ps2]   || DEFAULT_PS2
+        @env   = DEFAULT_ENV.merge(options[:env] || {})
         @stty  = options[:stty]  || DEFAULT_STTY
         @timer = options[:timer] || Timer.new
         @max_run_time = options[:max_run_time] || DEFAULT_MAX_RUN_TIME
@@ -59,6 +55,16 @@ module ShellTest
           :ps1 => /#{Regexp.escape(ps1)}/,
           :ps2 => /#{Regexp.escape(ps2)}/
         }
+      end
+
+      # The shell PS1, as configured in env.
+      def ps1
+        env['PS1']
+      end
+
+      # The shell PS2, as configured in env.
+      def ps2
+        env['PS2']
       end
 
       # Define a step.  At each step:
@@ -188,7 +194,7 @@ module ShellTest
       # values.
       #
       def spawn
-        with_env('PS1' => ps1, 'PS2' => ps2) do
+        with_env(env) do
           @log = []
           @status = super(shell) do |master, slave|
             agent = Agent.new(master, slave, timer, @prompts)
