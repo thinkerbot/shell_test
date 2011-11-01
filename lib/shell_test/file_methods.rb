@@ -271,6 +271,15 @@ module ShellTest
         FileUtils.chmod(mode, target)
       end
 
+      atime = options[:atime]
+      mtime = options[:mtime]
+
+      if atime || mtime
+        atime  ||= File.atime(target)
+        mtime  ||= File.mtime(target)
+        File.utime(atime, mtime, target)
+      end
+
       target
     end
 

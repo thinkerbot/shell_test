@@ -192,6 +192,18 @@ class FileMethodsTest < Test::Unit::TestCase
     assert_equal '100640', mode('dir/file')
   end
 
+  def test_prepare_sets_atime
+    time = Time.now - 100
+    prepare('dir/file', 'content', :atime => time)
+    assert_equal time.to_i, atime('dir/file').to_i
+  end
+
+  def test_prepare_sets_mtime
+    time = Time.now - 100
+    prepare('dir/file', 'content', :mtime => time)
+    assert_equal time.to_i, mtime('dir/file').to_i
+  end
+
   #
   # content test
   #
