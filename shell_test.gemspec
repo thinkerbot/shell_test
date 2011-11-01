@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = ShellTest::VERSION
   s.authors     = ['Simon Chiang']
   s.email       = ['simon.a.chiang@gmail.com']
-  s.homepage    = ''
+  s.homepage    = 'http://github.com/thinkerbot/shell_test'
   s.summary     = %q{Test modules for shell scripts}
   s.description = %w{
     Provides test modules to simplify testing of shell scripts.
