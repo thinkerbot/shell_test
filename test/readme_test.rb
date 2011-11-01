@@ -100,6 +100,15 @@ class ReadmeTest < Test::Unit::TestCase
               :....:
             }
           end
+
+          def test_scripts_where_alternate_prompts_are_needed
+            with_env('PS1' => '% ') do
+              assert_script %{
+                % echo '$ $ $'
+                $ $ $
+              }
+            end
+          end
         end
       })
     end
