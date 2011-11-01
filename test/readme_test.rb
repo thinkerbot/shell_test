@@ -116,7 +116,7 @@ class ReadmeTest < Test::Unit::TestCase
         class FileMethodsExample < Test::Unit::TestCase
           include ShellTest::FileMethods
 
-          def test_preparation_of_a_test_specific_file
+          def test_setup_of_a_test_specific_file
             path = setup_file('dir/file.txt') {|io| io << 'content' }
             assert_equal "content", File.read(path)
           end
