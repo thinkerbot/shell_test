@@ -1,9 +1,11 @@
 require File.expand_path("../../../test_helper", __FILE__)
 require "shell_test/shell_methods/session"
 require "shell_test/string_methods"
+require "shell_test/env_methods"
 
 class SessionTest < Test::Unit::TestCase
   include ShellTest::StringMethods
+  include ShellTest::EnvMethods
 
   Agent = ShellTest::ShellMethods::Agent
   Session = ShellTest::ShellMethods::Session
@@ -13,6 +15,12 @@ class SessionTest < Test::Unit::TestCase
   def setup
     super
     @session = Session.new
+    @original_env = set_env('PS1' => '$ ', 'PS2' => '> ')
+  end
+
+  def teardown
+    set_env(@original_env)
+    super
   end
 
   #
@@ -113,16 +121,6 @@ abc
     session.on(/\$\ /, "exit\n")
 
     assert_equal "$ echo ab\\\n> c\nabc\n$ exit\nexit\n", session.run.result
-    assert_equal 0, session.status.exitstatus
-  end
-
-  def test_run_with_different_ps1_and_ps2
-    session = Session.new(:env => {'PS1' => '% ', 'PS2' => ': '})
-    session.on(/\% /, "echo ab\\\n")
-    session.on(/\: /, "c\n")
-    session.on(/\% /, "exit\n")
-
-    assert_equal "% echo ab\\\n: c\nabc\n% exit\nexit\n", session.run.result
     assert_equal 0, session.status.exitstatus
   end
 

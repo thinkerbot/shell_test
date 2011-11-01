@@ -1,3 +1,4 @@
+require 'shell_test/env_methods'
 require 'shell_test/regexp_escape'
 require 'shell_test/string_methods'
 require 'shell_test/shell_methods/session'
@@ -6,6 +7,18 @@ module ShellTest
   module ShellMethods
     include StringMethods
     include EnvMethods
+
+    attr_reader :original_env
+
+    def setup
+      super
+      @original_env = set_env('PS1' => '$ ', 'PS2' => '> ')
+    end
+
+    def teardown
+      set_env(@original_env)
+      super
+    end
 
     def pty(script, options={}, &block)
       _pty outdent(script), options, &block

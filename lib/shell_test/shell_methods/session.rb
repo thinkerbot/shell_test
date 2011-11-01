@@ -1,4 +1,3 @@
-require 'shell_test/env_methods'
 require 'shell_test/shell_methods/agent'
 require 'shell_test/shell_methods/utils'
 require 'strscan'
@@ -8,20 +7,14 @@ module ShellTest
 
     # Session is an engine for running shell sessions.
     class Session
-      include EnvMethods
       include Utils
 
       DEFAULT_SHELL = '/bin/sh'
-      DEFAULT_ENV   = {'PS1' => '$ ', 'PS2' => '> '}
       DEFAULT_STTY  = '-echo -onlcr'
       DEFAULT_MAX_RUN_TIME = 1
 
       # The session shell
       attr_reader :shell
-
-      # The initial session ENV (as established by the parent ruby process -
-      # note the shell init scripts can override it before the first prompt)
-      attr_reader :env
 
       # Aguments string passed stty on run
       attr_reader :stty
@@ -44,7 +37,6 @@ module ShellTest
 
       def initialize(options={})
         @shell = options[:shell] || DEFAULT_SHELL
-        @env   = DEFAULT_ENV.merge(options[:env] || {})
         @stty  = options[:stty]  || DEFAULT_STTY
         @timer = options[:timer] || Timer.new
         @max_run_time = options[:max_run_time] || DEFAULT_MAX_RUN_TIME
@@ -53,14 +45,14 @@ module ShellTest
         @status  = nil
       end
 
-      # The shell PS1, as configured in env.
+      # The shell PS1, as configured in ENV.
       def ps1
-        env['PS1']
+        ENV['PS1']
       end
 
-      # The shell PS2, as configured in env.
+      # The shell PS2, as configured in ENV.
       def ps2
-        env['PS2']
+        ENV['PS2']
       end
 
       # Define a step.  At each step:
@@ -180,53 +172,42 @@ module ShellTest
       # Spawns a PTY shell session and yields an Agent to the block.  The
       # session is logged to log and the final exit status set into status
       # (any previous values are overwritten).
-      #
-      # ==== ENV variables
-      #
-      # PS1 and PS2 are set into ENV for the duration of the block and so in
-      # most cases the shell inherits those values.  Keep in mind, however,
-      # that the shell config scripts can set these variables and on some
-      # distributions (ex SLES 10) the config script do not respect prior
-      # values.
-      #
       def spawn
-        with_env(env) do
-          @log = []
-          @status = super(shell) do |master, slave|
-            agent = Agent.new(master, slave, timer)
-            timer.start(max_run_time)
+        @log = []
+        @status = super(shell) do |master, slave|
+          agent = Agent.new(master, slave, timer)
+          timer.start(max_run_time)
 
-            if stty
-              # It would be lovely to work this into steps somehow, or to set
-              # the stty externally like:
-              #
-              #   system("stty #{stty} < '#{master.path}'")
-              #
-              # Unfortunately the former complicates result and the latter
-              # doesn't work.  In tests the stty settings DO get set but they
-              # don't refresh in the pty.
-              log << agent.on(ps1, "stty #{stty}\n")
-              log << agent.on(ps1, "echo $?\n")
-              log << agent.on(ps1, "\n")
+          if stty
+            # It would be lovely to work this into steps somehow, or to set
+            # the stty externally like:
+            #
+            #   system("stty #{stty} < '#{master.path}'")
+            #
+            # Unfortunately the former complicates result and the latter
+            # doesn't work.  In tests the stty settings DO get set but they
+            # don't refresh in the pty.
+            log << agent.on(ps1, "stty #{stty}\n")
+            log << agent.on(ps1, "echo $?\n")
+            log << agent.on(ps1, "\n")
 
-              unless log.last == "0\n#{ps1}"
-                raise "stty failure\n#{summary}"
-              end
-
-              log.clear
+            unless log.last == "0\n#{ps1}"
+              raise "stty failure\n#{summary}"
             end
 
-            begin
-              yield agent
-            rescue Agent::ReadError
-              log << $!.buffer
-              $!.message << "\n#{summary}"
-              raise
-            end
-
-            timer.stop
-            agent.close
+            log.clear
           end
+
+          begin
+            yield agent
+          rescue Agent::ReadError
+            log << $!.buffer
+            $!.message << "\n#{summary}"
+            raise
+          end
+
+          timer.stop
+          agent.close
         end
         self
       end

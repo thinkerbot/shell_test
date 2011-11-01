@@ -75,6 +75,18 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_inherits_prompt_env
+    with_env({'PS1' => '% ', 'PS2' => '~ '}) do
+      assert_script %{
+        % for n in one two; do
+        ~   echo $n
+        ~ done
+        one
+        two
+      }
+    end
+  end
+
   def test_assert_script_for_long_commands_and_output
     str = "abcdefgh" * 20
     assert_script %{
