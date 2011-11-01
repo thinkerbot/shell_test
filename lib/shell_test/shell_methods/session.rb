@@ -65,7 +65,8 @@ module ShellTest
       # reached within max_run_time then a ReadError occurs.  Special
       # considerations:
       #
-      # * The prompt should be a regular expression, :ps1, or :ps2.
+      # * The prompt can be a regular expression, a string, or a Symbol (set
+      #   to the same ENV value - ex :PS1)
       # * A nil max_run_time indicates no maximum run time - which more
       #   accurately means the input can go until the overall max_run_time for
       #   the session runs out.
@@ -74,6 +75,10 @@ module ShellTest
       #
       # Returns self.
       def on(prompt, input=nil, max_run_time=nil, &callback) # :yields: output
+        if prompt.kind_of?(Symbol)
+          prompt = ENV[prompt.to_s]
+        end
+
         if prompt.nil?
           raise ArgumentError, "no prompt specified"
         end

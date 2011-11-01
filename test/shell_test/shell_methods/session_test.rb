@@ -69,6 +69,24 @@ class SessionTest < Test::Unit::TestCase
   # end
 
   #
+  # on test
+  #
+
+  def test_on_translates_symbols_to_their_corresponding_ENV_value
+    session.on(:PS1, "echo hello world\n")
+    assert_equal '$ ', session.steps[0].first
+  end
+
+  def test_on_raises_error_if_no_corresponding_ENV_value_is_set
+    err = assert_raises(ArgumentError) do
+      with_env('NO_VALUE' => nil) do
+        session.on(:NO_VALUE, "echo hello world\n")
+      end
+    end
+    assert_equal "no prompt specified", err.message
+  end
+
+  #
   # parse test
   #
 
