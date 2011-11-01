@@ -187,6 +187,11 @@ class FileMethodsTest < Test::Unit::TestCase
     assert_equal "content\n", File.read(path)
   end
 
+  def test_prepare_sets_mode
+    prepare('dir/file', 'content', :mode => 0640)
+    assert_equal '100640', mode('dir/file')
+  end
+
   #
   # content test
   #

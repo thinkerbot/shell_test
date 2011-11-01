@@ -253,7 +253,7 @@ module ShellTest
     end
 
     # Same as prepare but does not outdent content.
-    def _prepare(relative_path, content=nil, &block)
+    def _prepare(relative_path, content=nil, options={}, &block)
       target = path(relative_path)
 
       if File.exists?(target)
@@ -266,6 +266,10 @@ module ShellTest
       FileUtils.touch(target)
       File.open(target, 'w') {|io| io << content } if content
       File.open(target, 'a', &block) if block
+
+      if mode = options[:mode]
+        FileUtils.chmod(mode, target)
+      end
 
       target
     end
@@ -284,9 +288,9 @@ module ShellTest
     #   File.read(path)  # => "line one\nline two\n"
     #
     # Returns the absolute path to the new file.
-    def prepare(relative_path, content=nil, &block)
+    def prepare(relative_path, content=nil, options={}, &block)
       content = outdent(content) if content
-      _prepare(relative_path, content, &block)
+      _prepare(relative_path, content, options, &block)
     end
 
     # Returns the content of the file under method_dir, if it exists.
