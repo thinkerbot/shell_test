@@ -1,4 +1,13 @@
-== 0.4.0 2011/11/01
+== 0.5.0 2011/11/01
+
+Revert change so that FileMethods uses prepare/prepare_dir again (bad idea).
+Expand functionality of prepare method.
+
+* add atime/ctime/mtime methods to FileMethods
+* allow prepare to set mode
+* allow prepare to set atime/mtime
+
+== 0.4.1 2011/11/01
 
 * allow Session#on to map symbols to ENV values
 
