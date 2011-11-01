@@ -134,6 +134,14 @@ class ShellMethodsTest < Test::Unit::TestCase
     }
   end
 
+  def test_assert_script_allows_specification_of_inputs
+    assert_script %q{
+      $ ruby -e 'print "input?: "; print "\n#{gets.upcase}"'
+      input?: {{output!}}
+      OUTPUT!
+    }
+  end
+
   def test_assert_script_tests_exit_status
     assert_script %{
       $ false
