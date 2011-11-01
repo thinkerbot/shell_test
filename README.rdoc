@@ -16,15 +16,15 @@ ShellTest builds on modules that provide specific functionality. The modules
 may be used independently, but by including ShellTest you get them all:
 
   require 'shell_test/unit'
-  
+
   class ShellTestExample < Test::Unit::TestCase
     include ShellTest
-  
+
     def test_a_script
       script = prepare 'script.sh', %{
         echo goodnight $1
       }
-  
+
       assert_script %{
         $ sh '#{script}' moon
         goodnight moon
