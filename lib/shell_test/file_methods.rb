@@ -306,6 +306,24 @@ module ShellTest
       File.exists?(full_path) ? sprintf("%o", File.stat(full_path).mode) : nil
     end
 
+    # Returns the atime for the file under method_dir, if it exists.
+    def atime(relative_path)
+      full_path = path(relative_path)
+      File.exists?(full_path) ? File.atime(full_path) : nil
+    end
+
+    # Returns the ctime for the file under method_dir, if it exists.
+    def ctime(relative_path)
+      full_path = path(relative_path)
+      File.exists?(full_path) ? File.ctime(full_path) : nil
+    end
+
+    # Returns the mtime for the file under method_dir, if it exists.
+    def mtime(relative_path)
+      full_path = path(relative_path)
+      File.exists?(full_path) ? File.mtime(full_path) : nil
+    end
+
     # Removes a file or directory under method_dir, if it exists.
     def remove(relative_path)
       full_path = path(relative_path)

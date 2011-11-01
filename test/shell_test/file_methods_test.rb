@@ -225,6 +225,45 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
+  # atime test
+  #
+
+  def test_atime_returns_the_atime_for_a_file_under_method_dir
+    path = prepare('dir/file')
+    assert_equal File.atime(path), atime('dir/file')
+  end
+
+  def test_atime_returns_nil_for_non_existant_files
+    assert_equal nil, atime('dir/file')
+  end
+
+  #
+  # ctime test
+  #
+
+  def test_ctime_returns_the_ctime_for_a_file_under_method_dir
+    path = prepare('dir/file')
+    assert_equal File.ctime(path), ctime('dir/file')
+  end
+
+  def test_ctime_returns_nil_for_non_existant_files
+    assert_equal nil, ctime('dir/file')
+  end
+
+  #
+  # mtime test
+  #
+
+  def test_mtime_returns_the_mtime_for_a_file_under_method_dir
+    path = prepare('dir/file')
+    assert_equal File.mtime(path), mtime('dir/file')
+  end
+
+  def test_mtime_returns_nil_for_non_existant_files
+    assert_equal nil, mtime('dir/file')
+  end
+
+  #
   # remove test
   #
 
