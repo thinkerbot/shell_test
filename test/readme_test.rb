@@ -6,7 +6,7 @@ class ReadmeTest < Test::Unit::TestCase
   LIBDIR = File.expand_path('../../lib', __FILE__)
 
   def test_shell_test_example
-    script = prepare('test.rb') do |io|
+    script = setup_file('test.rb') do |io|
       io << outdent(%q{
         require 'shell_test/unit'
 
@@ -14,7 +14,7 @@ class ReadmeTest < Test::Unit::TestCase
           include ShellTest
 
           def test_a_script
-            script = prepare 'script.sh', %{
+            script = setup_file 'script.sh', %{
               echo goodnight $1
             }
 
@@ -25,7 +25,7 @@ class ReadmeTest < Test::Unit::TestCase
           end
 
           def test_a_script_that_takes_input
-            script = prepare 'script.sh', %{
+            script = setup_file 'script.sh', %{
               stty -echo
               while true; do
                 printf "Do you wish to continue? [y/n]: "
@@ -56,7 +56,7 @@ class ReadmeTest < Test::Unit::TestCase
   end
   
   def test_shell_methods_example
-    script = prepare('test.rb') do |io|
+    script = setup_file('test.rb') do |io|
       io << outdent(%q{
         require 'shell_test/unit'
 
@@ -109,7 +109,7 @@ class ReadmeTest < Test::Unit::TestCase
   end
   
   def test_file_methods_example
-    script = prepare('test.rb') do |io|
+    script = setup_file('test.rb') do |io|
       io << outdent(%q{
         require 'shell_test/unit'
 
@@ -117,7 +117,7 @@ class ReadmeTest < Test::Unit::TestCase
           include ShellTest::FileMethods
 
           def test_preparation_of_a_test_specific_file
-            path = prepare('dir/file.txt') {|io| io << 'content' }
+            path = setup_file('dir/file.txt') {|io| io << 'content' }
             assert_equal "content", File.read(path)
           end
         end

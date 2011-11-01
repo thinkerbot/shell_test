@@ -208,7 +208,7 @@ module ShellTest
     end
 
     # Creates a directory under method_dir.
-    def prepare_dir(relative_path)
+    def setup_dir(relative_path)
       target_dir = path(relative_path)
       unless File.directory?(target_dir)
         FileUtils.mkdir_p(target_dir)
@@ -216,8 +216,10 @@ module ShellTest
       target_dir
     end
 
-    # Same as prepare but does not outdent content.
-    def _prepare(relative_path, content=nil, &block)
+    alias prepare_dir setup_dir
+
+    # Same as setup_file but does not outdent content.
+    def _setup_file(relative_path, content=nil, &block)
       target = path(relative_path)
 
       if File.exists?(target)
@@ -241,16 +243,16 @@ module ShellTest
     # Content provided as a string is outdented (see StringMethods#outdent),
     # so this syntax is possible:
     #
-    #   path = prepare 'file', %{
+    #   path = setup_file 'file', %{
     #     line one
     #     line two
     #   }
     #   File.read(path)  # => "line one\nline two\n"
     #
     # Returns the absolute path to the new file.
-    def prepare(relative_path, content=nil, &block)
+    def setup_file(relative_path, content=nil, &block)
       content = outdent(content) if content
-      _prepare(relative_path, content, &block)
+      _setup_file(relative_path, content, &block)
     end
 
     # Returns the content of the file under method_dir, if it exists.

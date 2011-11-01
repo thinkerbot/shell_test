@@ -13,7 +13,7 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   def test_class_dir_can_be_set_at_the_class_level
-    path = prepare('file_test_parent_class.rb') do |io|
+    path = setup_file('file_test_parent_class.rb') do |io|
       io.puts %q{
         class FileMethodsAssignClassDir
           include ShellTest::FileMethods
@@ -27,7 +27,7 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   def test_subclass_guesses_class_dir_as_file_name_minus_extname
-    path = prepare('file_test_parent_class.rb') do |io|
+    path = setup_file('file_test_parent_class.rb') do |io|
       io.puts %q{
         class FileMethodsParentClass
           include ShellTest::FileMethods
@@ -36,7 +36,7 @@ class FileMethodsTest < Test::Unit::TestCase
     end
     require path
 
-    path = prepare('file_test_child_class.rb') do |io|
+    path = setup_file('file_test_child_class.rb') do |io|
       io.puts %q{
         class FileMethodsChildClass < FileMethodsParentClass
         end
@@ -48,7 +48,7 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   def test_submodule_guesses_class_dir_as_file_name_minus_extname
-    path = prepare('file_test_submodule.rb') do |io|
+    path = setup_file('file_test_submodule.rb') do |io|
       io.puts %q{
         module FileMethodsSubmodule
           include ShellTest::FileMethods
@@ -57,7 +57,7 @@ class FileMethodsTest < Test::Unit::TestCase
     end
     require path
 
-    path = prepare('file_test_include_submodule.rb') do |io|
+    path = setup_file('file_test_include_submodule.rb') do |io|
       io.puts %q{
         class FileMethodsIncludeSubmodule
           include FileMethodsSubmodule
@@ -116,46 +116,46 @@ class FileMethodsTest < Test::Unit::TestCase
   #
 
   def test_glob_globs_the_pattern_under_method_dir
-    a = prepare('a.txt')
-    b = prepare('b')
-    c = prepare('c.txt')
+    a = setup_file('a.txt')
+    b = setup_file('b')
+    c = setup_file('c.txt')
 
     assert_equal [a, b, c], glob('*').sort
     assert_equal [a, c], glob('*.txt').sort
   end
 
   #
-  # prepare_dir test
+  # setup_dir test
   #
 
-  def test_prepare_dir_makes_a_directory_and_all_parent_directories
-    path = prepare_dir('a/b/c')
+  def test_setup_dir_makes_a_directory_and_all_parent_directories
+    path = setup_dir('a/b/c')
     assert_equal File.join(method_dir, 'a/b/c'), path
     assert_equal true, File.directory?(path)
   end
 
   #
-  # _prepare test
+  # _setup_file test
   #
 
-  def test__prepare_makes_a_file_and_all_parent_directories
-    path = _prepare('dir/file')
+  def test__setup_file_makes_a_file_and_all_parent_directories
+    path = _setup_file('dir/file')
     assert_equal true, File.exists?(path)
     assert_equal '', File.read(path)
   end
 
-  def test_prepare_returns_an_absolute_path
-    path = _prepare('dir/file')
+  def test_setup_file_returns_an_absolute_path
+    path = _setup_file('dir/file')
     assert_equal File.expand_path(path), path
   end
 
-  def test__prepare_accepts_content_via_a_block
-    path = _prepare('dir/file') {|io| io << 'content' }
+  def test__setup_file_accepts_content_via_a_block
+    path = _setup_file('dir/file') {|io| io << 'content' }
     assert_equal 'content', File.read(path)
   end
 
-  def test__prepare_accepts_string_content
-    path = _prepare('dir/file', %{
+  def test__setup_file_accepts_string_content
+    path = _setup_file('dir/file', %{
       content
     })
     assert_equal %{
@@ -164,24 +164,24 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   #
-  # prepare test
+  # setup_file test
   #
 
-  def test_prepare_documentation
-    path = prepare 'file', %{
+  def test_setup_file_documentation
+    path = setup_file 'file', %{
       line one
       line two
     }
     assert_equal "line one\nline two\n", File.read(path)
   end
 
-  def test_prepare_accepts_content_via_a_block
-    path = prepare('dir/file') {|io| io << 'content' }
+  def test_setup_file_accepts_content_via_a_block
+    path = setup_file('dir/file') {|io| io << 'content' }
     assert_equal 'content', File.read(path)
   end
 
-  def test_prepare_outdents_content
-    path = prepare('dir/file', %{
+  def test_setup_file_outdents_content
+    path = setup_file('dir/file', %{
       content
     })
     assert_equal "content\n", File.read(path)
@@ -192,12 +192,12 @@ class FileMethodsTest < Test::Unit::TestCase
   #
   
   def test_content_returns_content_for_a_file_under_method_dir
-    prepare('dir/file', 'content')
+    setup_file('dir/file', 'content')
     assert_equal 'content', content('dir/file')
   end
 
   def test_content_allows_specification_of_length_and_offset
-    prepare('dir/file', 'content')
+    setup_file('dir/file', 'content')
     assert_equal 'on', content('dir/file', 2, 1)
   end
 
@@ -210,7 +210,7 @@ class FileMethodsTest < Test::Unit::TestCase
   #
   
   def test_mode_returns_the_formatted_string_mode_for_a_file_under_method_dir
-    path = prepare('dir/file')
+    path = setup_file('dir/file')
     FileUtils.chmod(0640, path)
     assert_equal '100640', mode('dir/file')
   end
@@ -224,7 +224,7 @@ class FileMethodsTest < Test::Unit::TestCase
   #
 
   def test_remove_removes_a_file_under_method_dir
-    path = prepare('dir/file')
+    path = setup_file('dir/file')
     dir  = File.dirname(path)
     remove(path)
 
@@ -233,7 +233,7 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   def test_remove_removes_a_directory_under_method_dir
-    dir = prepare_dir('a/b')
+    dir = setup_dir('a/b')
     remove(dir)
 
     assert_equal false, File.exists?(dir)
@@ -252,14 +252,14 @@ class FileMethodsTest < Test::Unit::TestCase
   #
 
   def test_cleanup_removes_method_dir_and_all_contents
-    prepare('dir/file') {}
+    setup_file('dir/file') {}
     cleanup
     assert_equal false, File.exists?(method_dir)
   end
 
   no_cleanup
   def test_no_cleanup_turns_off_cleanup_one
-    prepare('dir/file') {}
+    setup_file('dir/file') {}
 
     cleanup
     assert_equal true, File.exists?(method_dir)
@@ -269,14 +269,14 @@ class FileMethodsTest < Test::Unit::TestCase
 
   cleanup :test_cleanup_may_be_turned_on_for_a_specific_method
   def test_cleanup_may_be_turned_on_for_a_specific_method
-    prepare('dir/file') {}
+    setup_file('dir/file') {}
 
     cleanup
     assert_equal false, File.exists?(method_dir)
   end
 
   def test_no_cleanup_turns_off_cleanup_two
-    prepare('dir/file') {}
+    setup_file('dir/file') {}
 
     cleanup
     assert_equal true, File.exists?(method_dir)
@@ -286,7 +286,7 @@ class FileMethodsTest < Test::Unit::TestCase
 
   cleanup
   def test_cleanup_turns_on_cleanup_one
-    prepare('dir/file') {}
+    setup_file('dir/file') {}
 
     cleanup
     assert_equal false, File.exists?(method_dir)
@@ -294,7 +294,7 @@ class FileMethodsTest < Test::Unit::TestCase
 
   no_cleanup :test_cleanup_may_be_turned_off_for_a_specific_method
   def test_cleanup_may_be_turned_off_for_a_specific_method
-    prepare('dir/file') {}
+    setup_file('dir/file') {}
 
     cleanup
     assert_equal true, File.exists?(method_dir)
@@ -303,7 +303,7 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   def test_cleanup_turns_on_cleanup_two
-    prepare('dir/file') {}
+    setup_file('dir/file') {}
 
     cleanup
     assert_equal false, File.exists?(method_dir)
@@ -311,10 +311,10 @@ class FileMethodsTest < Test::Unit::TestCase
 
   cleanup_paths 'a', 'b'
   def test_cleanup_paths_defines_the_relative_paths_to_cleanup
-    prepare('a/x') {}
-    prepare('a/y') {}
-    prepare('b') {}
-    prepare('c') {}
+    setup_file('a/x') {}
+    setup_file('a/y') {}
+    setup_file('b') {}
+    setup_file('c') {}
 
     cleanup
 
@@ -326,8 +326,8 @@ class FileMethodsTest < Test::Unit::TestCase
   end
 
   def test_cleanup_paths_persists_until_next_cleanup_paths_one
-    prepare('b') {}
-    prepare('c') {}
+    setup_file('b') {}
+    setup_file('c') {}
 
     cleanup
 
@@ -339,8 +339,8 @@ class FileMethodsTest < Test::Unit::TestCase
 
   cleanup_paths '.'
   def test_cleanup_paths_persists_until_next_cleanup_paths_two
-    prepare('b') {}
-    prepare('c') {}
+    setup_file('b') {}
+    setup_file('c') {}
 
     cleanup
 
