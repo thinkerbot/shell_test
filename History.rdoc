@@ -1,3 +1,10 @@
+== 0.4.0 2011/11/01
+
+Renames prepare methods in FileMethods to setup_file and setup_dir, and
+changes numerous class methods for setting up method dir cleanup.
+
+* Parser now escapes special chars in inline prompts [issue #16]
+
 == 0.3.0 2011/10/23
 
 Rewrite and expansion of library to use PTY shell sessions rather than
