@@ -256,14 +256,14 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
   #
 
   def test_cleanup_removes_method_dir_and_all_contents
-    prepare('dir/file') {}
+    prepare('dir/file')
     cleanup
     assert_equal false, File.exists?(method_dir)
   end
 
   do_not_cleanup
   def test_do_not_cleanup_turns_off_cleanup_one
-    prepare('dir/file') {}
+    prepare('dir/file')
 
     cleanup
     assert_equal true, File.exists?(method_dir)
@@ -273,7 +273,7 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
 
   cleanup :test_cleanup_may_be_turned_on_for_a_specific_method_using_cleanup
   def test_cleanup_may_be_turned_on_for_a_specific_method_using_cleanup
-    prepare('dir/file') {}
+    prepare('dir/file')
 
     cleanup
     assert_equal false, File.exists?(method_dir)
@@ -281,14 +281,14 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
 
   define_paths_to_cleanup :test_cleanup_may_be_turned_on_for_a_specific_method_using_define_paths_to_cleanup, ['.']
   def test_cleanup_may_be_turned_on_for_a_specific_method_using_define_paths_to_cleanup
-    prepare('a/file') {}
+    prepare('a/file')
 
     cleanup
     assert_equal false, File.exists?(method_dir)
   end
 
   def test_do_not_cleanup_turns_off_cleanup_two
-    prepare('dir/file') {}
+    prepare('dir/file')
 
     cleanup
     assert_equal true, File.exists?(method_dir)
@@ -298,7 +298,7 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
 
   cleanup
   def test_cleanup_turns_on_cleanup_one
-    prepare('dir/file') {}
+    prepare('dir/file')
 
     cleanup
     assert_equal false, File.exists?(method_dir)
@@ -306,7 +306,7 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
 
   do_not_cleanup :test_cleanup_may_be_turned_off_for_a_specific_method
   def test_cleanup_may_be_turned_off_for_a_specific_method
-    prepare('dir/file') {}
+    prepare('dir/file')
 
     cleanup
     assert_equal true, File.exists?(method_dir)
@@ -315,7 +315,7 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
   end
 
   def test_cleanup_turns_on_cleanup_two
-    prepare('dir/file') {}
+    prepare('dir/file')
 
     cleanup
     assert_equal false, File.exists?(method_dir)
@@ -323,10 +323,10 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
 
   default_paths_to_cleanup 'a', 'b'
   def test_default_paths_to_cleanup_defines_the_default_paths_to_cleanup
-    prepare('a/x') {}
-    prepare('a/y') {}
-    prepare('b') {}
-    prepare('c') {}
+    prepare('a/x')
+    prepare('a/y')
+    prepare('b')
+    prepare('c')
 
     cleanup
 
@@ -338,8 +338,8 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
   end
 
   def test_default_paths_to_cleanup_persists_until_next_default_paths_to_cleanup_one
-    prepare('b') {}
-    prepare('c') {}
+    prepare('b')
+    prepare('c')
 
     cleanup
 
@@ -351,8 +351,8 @@ class FileMethodsCleanupTest < Test::Unit::TestCase
 
   default_paths_to_cleanup '.'
   def test_default_paths_to_cleanup_persists_until_next_default_paths_to_cleanup_two
-    prepare('b') {}
-    prepare('c') {}
+    prepare('b')
+    prepare('c')
 
     cleanup
 
