@@ -21,14 +21,38 @@ may be used independently, but by including ShellTest you get them all:
     include ShellTest
   
     def test_a_script
-      script = prepare('script.sh') do |io|
-        io.puts "echo goodnight $1"
-      end
+      script = prepare 'script.sh', %{
+        echo goodnight $1
+      }
   
       assert_script %{
         $ sh '#{script}' moon
         goodnight moon
       }, :exitstatus => 0
+    end
+
+    def test_a_script_that_takes_input
+      script = prepare 'script.sh', %{
+        stty -echo
+        while true; do
+          printf "Do you wish to continue? [y/n]: "
+          read answer
+          case $answer in
+              y ) printf "\nOk!\n"; break;;
+              n ) printf "\nToo bad.\n"; break;;
+              * ) printf "\nPlease answer y or n.\n";;
+          esac
+        done
+        stty echo
+      }
+
+      assert_script %{
+        $ sh '#{script}'
+        Do you wish to continue? [y/n]: {{hmmm}}
+        Please answer y or n.
+        Do you wish to continue? [y/n]: {{y}}
+        Ok!
+      }
     end
   end
 
@@ -79,19 +103,6 @@ from the terminal.
         Su Mo Tu We Th Fr Sa:. *.:
         :....:
       }
-    end
-
-    def test_scripts_that_take_input
-      assert_script %{
-        $ sudo echo 'sorry i cant do that dave'
-        Password:{{notIt}}
-        Sorry, try again.
-        Password:{{mayBeThis}}
-        Sorry, try again.
-        Password:{{cr@pWhatIsIt}}
-        Sorry, try again.
-        sudo: 3 incorrect password attempts
-      }, :max_run_time => 10
     end
   end
 
