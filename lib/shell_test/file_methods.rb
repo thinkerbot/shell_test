@@ -6,29 +6,47 @@ module ShellTest
     module ClassMethods
       attr_accessor :class_dir
 
-      attr_reader :cleanup_method_registry
+      # A registry tracking paths_to_cleanup for the current class.
+      attr_reader :paths_to_cleanup_registry
 
-      def cleanup_methods
-        @cleanup_methods ||= begin
-          cleanup_methods = {}
+      # A hash of (method_name, [relative_path]) pairs identifying which
+      # relative paths on each method have been marked on this class or
+      # inherited from ancestors. Entries in paths_to_cleanup should not be
+      # edited directly.  Instead use:
+      #
+      #   cleanup         : turn on cleanup for methods
+      #   do_not_cleanup  : turn off cleanup for methods
+      #   default_paths_to_cleanup : set the default paths to cleanup
+      # 
+      # Or if you need very precise editing, use (with the same semantics as
+      # {define/remove/undef}_method):
+      #
+      #   define_paths_to_cleanup
+      #   remove_paths_to_cleanup
+      #   undef_paths_to_cleanup
+      #
+      def paths_to_cleanup
+        @paths_to_cleanup ||= begin
+          paths_to_cleanup = {}
 
           ancestors.reverse.each do |ancestor|
             next unless ancestor.kind_of?(ClassMethods)
-            ancestor.cleanup_method_registry.each_pair do |key, value|
+            ancestor.paths_to_cleanup_registry.each_pair do |key, value|
               if value.nil?
-                cleanup_methods.delete(key)
+                paths_to_cleanup.delete(key)
               else
-                cleanup_methods[key] = value
+                paths_to_cleanup[key] = value
               end
             end
           end
 
-          cleanup_methods
+          paths_to_cleanup
         end
       end
 
-      def reset_cleanup_methods
-        @cleanup_methods = nil
+      # Resets paths_to_cleanup such that it will be recalculated.
+      def reset_paths_to_cleanup
+        @paths_to_cleanup = nil
       end
 
       protected
@@ -48,13 +66,13 @@ module ShellTest
           base.class_dir = Dir.tmpdir
         end
 
-        base.reset_cleanup_methods
-        unless base.instance_variable_defined?(:@cleanup_method_registry)
-          base.instance_variable_set(:@cleanup_method_registry, {})
+        base.reset_paths_to_cleanup
+        unless base.instance_variable_defined?(:@paths_to_cleanup_registry)
+          base.instance_variable_set(:@paths_to_cleanup_registry, {})
         end
 
-        unless base.instance_variable_defined?(:@cleanup_paths)
-          base.instance_variable_set(:@cleanup_paths, ['.'])
+        unless base.instance_variable_defined?(:@default_paths_to_cleanup)
+          base.instance_variable_set(:@default_paths_to_cleanup, ['.'])
         end
 
         unless base.instance_variable_defined?(:@cleanup)
@@ -67,47 +85,65 @@ module ShellTest
         super
       end
 
-      def define_method_cleanup(method_name, dirs)
-        reset_cleanup_methods
-        cleanup_method_registry[method_name.to_sym] = dirs
+      # Define the paths_to_cleanup for the specified method.  The settings
+      # are inherited, but can be overridden in subclasses.
+      def define_paths_to_cleanup(method_name, relative_paths)
+        reset_paths_to_cleanup
+        paths_to_cleanup_registry[method_name.to_sym] = relative_paths
       end
 
-      def remove_method_cleanup(method_name)
-        reset_cleanup_methods
-        cleanup_method_registry.delete(method_name.to_sym)
+      # Remove the paths_to_cleanup for the method as defined on self.  The
+      # paths_to_cleanup inherited from ancestors will still be in effect.
+      def remove_paths_to_cleanup(method_name)
+        reset_paths_to_cleanup
+        paths_to_cleanup_registry.delete(method_name.to_sym)
       end
 
-      def undef_method_cleanup(method_name)
-        reset_cleanup_methods
-        cleanup_method_registry[method_name.to_sym] = nil
+      # Undefines the paths_to_cleanup for the method, preventing inheritance
+      # from ancestors.
+      def undef_paths_to_cleanup(method_name)
+        reset_paths_to_cleanup
+        paths_to_cleanup_registry[method_name.to_sym] = nil
       end
 
-      def cleanup_paths(*dirs)
-        @cleanup_paths = dirs
+      # Sets the default paths_to_cleanup for subsequent methods.
+      def default_paths_to_cleanup(*relative_paths)
+        @default_paths_to_cleanup = relative_paths
       end
 
+      # Mark the methods for cleanup using the default_paths_to_cleanup.  Call
+      # without method names to mark all subsequent methods for cleanup.
       def cleanup(*method_names)
         if method_names.empty?
           @cleanup = true
         else
           method_names.each do |method_name|
-            define_method_cleanup method_name, @cleanup_paths
+            define_paths_to_cleanup method_name, @default_paths_to_cleanup
           end
         end
       end
 
-      def no_cleanup(*method_names)
+      # Prevent cleanup for the methods.  Call without method names to prevent
+      # cleanup for subsequent methods.
+      def do_not_cleanup(*method_names)
         if method_names.empty?
           @cleanup = false
         else
           method_names.each do |method_name|
-            undef_method_cleanup method_name
+            undef_paths_to_cleanup method_name
           end
         end
       end
 
+      # Returns true if the method should be marked for cleanup when added.
+      def mark_for_cleanup?(method_name)
+        @cleanup && !paths_to_cleanup_registry.has_key?(method_name.to_sym) && method_name.to_s.index("test_") == 0
+      end
+
+      # Overridden to ensure methods marked for cleanup are cleaned up.
       def method_added(sym)
-        if @cleanup && !cleanup_method_registry.has_key?(sym.to_sym) && sym.to_s[0, 5] == "test_"
+        super
+        if mark_for_cleanup?(sym)
           cleanup sym
         end
       end
@@ -274,15 +310,10 @@ module ShellTest
       FileUtils.rm_r(full_path) if File.exists?(full_path)
     end
 
-    # Shortcut to access the class.cleanup_methods.
-    def cleanup_methods
-      self.class.cleanup_methods
-    end
-
-    # Recursively removes paths specified for cleanup in cleanup_methods.
+    # Recursively removes paths specified for cleanup by paths_to_cleanup.
     def cleanup
-      if cleanup_paths = cleanup_methods[method_name.to_sym]
-        cleanup_paths.each {|relative_path| remove(relative_path) }
+      if paths = self.class.paths_to_cleanup[method_name.to_sym]
+        paths.each {|path| remove(path) }
       end
     end
   end

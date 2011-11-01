@@ -246,6 +246,10 @@ class FileMethodsTest < Test::Unit::TestCase
     remove(path)
     assert true
   end
+end
+
+class FileMethodsCleanupTest < Test::Unit::TestCase
+  include ShellTest::FileMethods
 
   #
   # cleanup test
@@ -257,8 +261,8 @@ class FileMethodsTest < Test::Unit::TestCase
     assert_equal false, File.exists?(method_dir)
   end
 
-  no_cleanup
-  def test_no_cleanup_turns_off_cleanup_one
+  do_not_cleanup
+  def test_do_not_cleanup_turns_off_cleanup_one
     setup_file('dir/file') {}
 
     cleanup
@@ -267,15 +271,23 @@ class FileMethodsTest < Test::Unit::TestCase
     remove method_dir
   end
 
-  cleanup :test_cleanup_may_be_turned_on_for_a_specific_method
-  def test_cleanup_may_be_turned_on_for_a_specific_method
+  cleanup :test_cleanup_may_be_turned_on_for_a_specific_method_using_cleanup
+  def test_cleanup_may_be_turned_on_for_a_specific_method_using_cleanup
     setup_file('dir/file') {}
 
     cleanup
     assert_equal false, File.exists?(method_dir)
   end
 
-  def test_no_cleanup_turns_off_cleanup_two
+  define_paths_to_cleanup :test_cleanup_may_be_turned_on_for_a_specific_method_using_define_paths_to_cleanup, ['.']
+  def test_cleanup_may_be_turned_on_for_a_specific_method_using_define_paths_to_cleanup
+    setup_file('a/file') {}
+
+    cleanup
+    assert_equal false, File.exists?(method_dir)
+  end
+
+  def test_do_not_cleanup_turns_off_cleanup_two
     setup_file('dir/file') {}
 
     cleanup
@@ -292,7 +304,7 @@ class FileMethodsTest < Test::Unit::TestCase
     assert_equal false, File.exists?(method_dir)
   end
 
-  no_cleanup :test_cleanup_may_be_turned_off_for_a_specific_method
+  do_not_cleanup :test_cleanup_may_be_turned_off_for_a_specific_method
   def test_cleanup_may_be_turned_off_for_a_specific_method
     setup_file('dir/file') {}
 
@@ -309,8 +321,8 @@ class FileMethodsTest < Test::Unit::TestCase
     assert_equal false, File.exists?(method_dir)
   end
 
-  cleanup_paths 'a', 'b'
-  def test_cleanup_paths_defines_the_relative_paths_to_cleanup
+  default_paths_to_cleanup 'a', 'b'
+  def test_default_paths_to_cleanup_defines_the_default_paths_to_cleanup
     setup_file('a/x') {}
     setup_file('a/y') {}
     setup_file('b') {}
@@ -325,7 +337,7 @@ class FileMethodsTest < Test::Unit::TestCase
     remove method_dir
   end
 
-  def test_cleanup_paths_persists_until_next_cleanup_paths_one
+  def test_default_paths_to_cleanup_persists_until_next_default_paths_to_cleanup_one
     setup_file('b') {}
     setup_file('c') {}
 
@@ -337,8 +349,8 @@ class FileMethodsTest < Test::Unit::TestCase
     remove method_dir
   end
 
-  cleanup_paths '.'
-  def test_cleanup_paths_persists_until_next_cleanup_paths_two
+  default_paths_to_cleanup '.'
+  def test_default_paths_to_cleanup_persists_until_next_default_paths_to_cleanup_two
     setup_file('b') {}
     setup_file('c') {}
 
@@ -346,4 +358,8 @@ class FileMethodsTest < Test::Unit::TestCase
 
     assert_equal false, File.exists?(method_dir)
   end
+end
+
+class FileMethodsCleanupTestChild < FileMethodsCleanupTest
+  # here to test inheritence
 end
