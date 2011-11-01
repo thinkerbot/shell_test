@@ -157,7 +157,7 @@ module ShellTest
         if options[:noexit]
           args.pop
         else
-          args.last << ps1
+          args.last << ps1 if args.last
           args.concat [ps1, "exit\n", nil, nil]
         end
 
