@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
     into other test frameworks.
   }.join(' ')
 
+  s.required_ruby_version = '~> 1.9.2'
   s.rubyforge_project = 'shell_test'
   s.license = 'MIT'
 
