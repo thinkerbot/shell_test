@@ -8,7 +8,7 @@ module ShellTest
       # Spawns a PTY session, returns the block result, and sets $?.  The PTY
       # process is killed upon an unhandled error (but the error is re-raised
       # for further handling).
-      def spawn(cmd, log=[])
+      def spawn(cmd)
         PTY.spawn(cmd) do |slave, master, pid|
           begin
             return yield(master, slave)
