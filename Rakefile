@@ -96,7 +96,7 @@ task :test_n, :n do |task, args|
   fails = 0
   n.times do
     output = `ruby -w -Ilib -e 'ARGV.dup.each {|test| load test}' '#{tests.join("' '")}'`
-    output =~ /Started(.*?)Finished/m
+    output =~ /\n([.EF]+)\n/m
     progress = $1.strip
     puts "%-8d%s" % [$?.pid, progress]
 
