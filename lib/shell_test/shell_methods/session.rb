@@ -179,7 +179,7 @@ module ShellTest
       # (any previous values are overwritten).
       def spawn
         @log = []
-        @status = super(shell) do |master, slave|
+        super(shell) do |master, slave|
           agent = Agent.new(master, slave, timer)
           timer.start(max_run_time)
 
@@ -214,6 +214,7 @@ module ShellTest
           timer.stop
           agent.close
         end
+        @status = $?
         self
       end
 
